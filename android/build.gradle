@@ -52,11 +52,11 @@ if (reactNativeDir.exists()) {
 
 
 android {
-  compileSdkVersion getExtOrDefault('compileSdkVersion', 28)
+  compileSdkVersion getExtOrDefault('compileSdkVersion',30)
 
   defaultConfig {
-    minSdkVersion getExtOrDefault('minSdkVersion', 16)
-    targetSdkVersion getExtOrDefault('targetSdkVersion', 28)
+    minSdkVersion getExtOrDefault('minSdkVersion', 21)
+    targetSdkVersion getExtOrDefault('targetSdkVersion', 30)
     //ndkVersion "21.1.6352462"
     
     externalNativeBuild {
