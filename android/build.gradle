@@ -28,8 +28,8 @@ if (rootProject.ext.has('reactNativeAndroidRoot')) {
   reactNativeDir = rootProject.ext.get('reactNativeAndroidRoot')
 } else {
   reactNativeDir = new File(
-          projectDir,
-          '/../../../node_modules/react-native/android'
+    projectDir,
+    '/../../../node_modules/react-native/android'
   )
 }
 if (reactNativeDir.exists()) {
@@ -40,8 +40,8 @@ if (reactNativeDir.exists()) {
     parentDir = reactNativeDir.parentFile
 
     reactNativeDir = new File(
-            parentDir,
-            'node_modules/react-native/android'
+      parentDir,
+      'node_modules/react-native/android'
     )
 
     if (reactNativeDir.exists()) {
@@ -52,13 +52,12 @@ if (reactNativeDir.exists()) {
 
 
 android {
-  compileSdkVersion getExtOrDefault('compileSdkVersion',30)
+  compileSdkVersion getExtOrDefault('compileSdkVersion', 30)
 
   defaultConfig {
     minSdkVersion getExtOrDefault('minSdkVersion', 21)
     targetSdkVersion getExtOrDefault('targetSdkVersion', 30)
-    //ndkVersion "21.1.6352462"
-    
+
     externalNativeBuild {
       cmake {
         cppFlags "-fexceptions", "-frtti", "-std=c++1y", "-DONANDROID"
@@ -79,15 +78,15 @@ android {
   }
 
   externalNativeBuild {
-     cmake {
-          path "./src/main/rnmmkv/CMakeLists.txt"
-      }
+    cmake {
+      path "./CMakeLists.txt"
+    }
   }
 
   packagingOptions {
     excludes = ["**/libc++_shared.so","**/libjsi.so","**/libreactnativejni.so", "META-INF/MANIFEST.MF"]
   }
-  
+
   configurations {
     extractJNI
   }
@@ -96,7 +95,7 @@ android {
 repositories {
   mavenCentral()
   mavenLocal()
-  google()  
+  google()
 
   if (reactNativeDir.exists()) {
     maven {
@@ -108,11 +107,11 @@ repositories {
 
   if (!found) {
     throw new GradleException(
-            "${project.name}: unable to locate React Native android sources. " +
-                    "Ensure you have you installed React Native as a dependency in your project and try again."
+      "${project.name}: unable to locate React Native android sources. " +
+        "Ensure you have you installed React Native as a dependency in your project and try again."
     )
   }
- 
+
 }
 
 dependencies {
@@ -126,7 +125,7 @@ dependencies {
 }
 
 task extractJNIFiles {
-  
+
   doLast {
     configurations.extractJNI.files.each {
       def file = it.absoluteFile
@@ -141,7 +140,7 @@ task extractJNIFiles {
 }
 
 task extractJNIFilesForRelease {
-  
+
   doLast {
     configurations.extractJNI.files.each {
       def file = it.absoluteFile

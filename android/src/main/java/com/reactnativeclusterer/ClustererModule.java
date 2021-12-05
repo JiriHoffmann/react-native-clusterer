@@ -1,16 +1,25 @@
 package com.reactnativeclusterer;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
-import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.JavaScriptContextHolder;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
 
 @ReactModule(name = ClustererModule.NAME)
 public class ClustererModule extends ReactContextBaseJavaModule {
     public static final String NAME = "Clusterer";
+
+    static {
+      try {
+        // Used to load the 'native-lib' library on application startup.
+        System.loadLibrary("cpp");
+      } catch (Exception ignored) {
+      }
+    }
 
     public ClustererModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -22,20 +31,17 @@ public class ClustererModule extends ReactContextBaseJavaModule {
         return NAME;
     }
 
-    static {
-        try {
-            // Used to load the 'native-lib' library on application startup.
-            System.loadLibrary("cpp");
-        } catch (Exception ignored) {
-        }
-    }
+    private native void nativeInstall(long jsi);
 
-    // Example method
-    // See https://reactnative.dev/docs/native-modules-android
-    @ReactMethod
-    public void multiply(int a, int b, Promise promise) {
-        promise.resolve(nativeMultiply(a, b));
-    }
+    public void installLib(JavaScriptContextHolder reactContext) {
 
-    public static native int nativeMultiply(int a, int b);
+      if (reactContext.get() != 0) {
+        this.nativeInstall(
+          reactContext.get()
+        );
+      } else {
+        Log.e("SimpleJsiModule", "JSI Runtime is not available in debug mode");
+      }
+
+    }
 }
