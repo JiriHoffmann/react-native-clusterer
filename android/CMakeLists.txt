@@ -9,7 +9,6 @@ include_directories(
         "${NODE_MODULES_DIR}/react-native/React/Base"
         "${NODE_MODULES_DIR}/react-native/ReactCommon/jsi"
         "../cpp"
-        "."
 )
 
 file (GLOB LIBRN_DIR "${BUILD_DIR}/react-native-0*/jni/${ANDROID_ABI}")
@@ -20,6 +19,10 @@ if (JSI_LIB)
           ${PACKAGE_NAME}
           SHARED
           ../cpp/react-native-clusterer.cpp
+          ../cpp/react-native-clusterer.h
+          ../cpp/supercluster.hpp
+          ../cpp/clusterer.cpp
+          ../cpp/clusterer.h
           ./cpp-adapter.cpp
   )
 
@@ -36,6 +39,10 @@ else()
           SHARED
           ../../react-native/ReactCommon/jsi/jsi/jsi.cpp
           ../cpp/react-native-clusterer.cpp
+          ../cpp/react-native-clusterer.h
+          ../cpp/supercluster.hpp
+          ../cpp/clusterer.cpp
+          ../cpp/clusterer.h
           ./cpp-adapter.cpp
   )
 endif()

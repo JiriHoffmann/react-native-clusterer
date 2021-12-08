@@ -1,5 +1,6 @@
 #include <jsi/jsi.h>
 #include "react-native-clusterer.h"
+#include "clusterer.h"
 
 using namespace facebook;
 using namespace std;
@@ -10,41 +11,102 @@ namespace example
 	void install(jsi::Runtime &jsiRuntime)
 	{
 
-		auto multiply = jsi::Function::createFromHostFunction(jsiRuntime,
-															  jsi::PropNameID::forAscii(jsiRuntime,
-																						"multiply"),
-															  2,
-															  [](jsi::Runtime &runtime,
-																 const jsi::Value &thisValue,
-																 const jsi::Value *arguments,
-																 size_t count) -> jsi::Value
-															  {
-																  int x = arguments[0].getNumber();
-																  int y = arguments[1].getNumber();
+		auto init = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "init"), 2, [](jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args, size_t count) -> jsi::Value
+														  {
+				if (count != 3)
+				{
+				  jsi::detail::throwJSError(rt, "React-Native-Clusterer: init expects 3 arguments");
+				  return {};
+				}
 
-																  return jsi::Value(x * y);
-															  });
+				if(!args[0].isString())
+				{
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: init expects a string as third argument");
+					return {};
+				}
 
-		jsiRuntime.global().setProperty(jsiRuntime, "multiply", move(multiply));
+				cluster_init(args[0].asString(rt).utf8(rt), rt, args[1], args[2]);
+				return jsi::Value(); });
 
-		//		auto multiplyWithCallback = Function::createFromHostFunction(jsiRuntime,
-		//																	 PropNameID::forAscii(jsiRuntime,
-		//																						  "multiplyWithCallback"),
-		//																	 3,
-		//																	 [](Runtime &runtime,
-		//																		const Value &thisValue,
-		//																		const Value *arguments,
-		//																		size_t count) -> Value {
-		//																		 int x = arguments[0].getNumber();
-		//																		 int y = arguments[1].getNumber();
-		//
-		//																		 arguments[2].getObject(runtime).getFunction(runtime).call(runtime, x * y);
-		//
-		//																		 return Value();
-		//
-		//																	 });
-		//
-		//		jsiRuntime.global().setProperty(jsiRuntime, "multiplyWithCallback", move(multiplyWithCallback));
+		auto getTile = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getTile"), 4, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
+															 {
+				if (count != 4)
+				{
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getTile expects 4 arguments");
+					return {};
+				}
+
+				if (!args[0].isString() || !args[1].isNumber() || !args[2].isNumber() || !args[3].isNumber())
+				{
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getTile expects string and 3 numbers as arguments");
+					return {};
+				}
+
+				auto result = cluster_getTile(args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber());
+
+				return jsi::Value((int)result.size()); });
+
+		auto getChildren = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getTile"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
+																 {
+				if (count != 2)
+				{
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getTile expects 2 arguments");
+					return {};
+				}
+
+				if (!args[0].isString() || !args[1].isNumber() )
+				{
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getTile expects string and a number as arguments");
+					return {};
+				}
+
+				auto result = cluster_getChildren(args[0].asString(rt).utf8(rt), (int)args[1].asNumber());
+
+
+				return jsi::Value(); });
+
+		auto getLeaves = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getLeaves"), 4, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
+															   {
+				if (count != 4)
+				{
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getLeaves expects 4 arguments");
+					return {};
+				}
+					if (!args[0].isString() || !args[1].isNumber() || !args[2].isNumber() || !args[3].isNumber())
+				{
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getTile expects 3 numbers as arguments");
+					return {};
+				}
+
+				auto result = cluster_getLeaves(args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber());
+				return jsi::Value(); });
+
+		auto getClusterExpansionZoom = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getLeaves"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
+																			 {
+				if (count != 2)
+				{
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getClusterExpansionZoom expects 2 arguments");
+					return {};
+				}
+				if (!args[0].isString() || !args[1].isNumber())
+				{
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getClusterExpansionZoom expects string and a number as arguments");
+					return {};
+				}
+
+				auto result = cluster_getClusterExpansionZoom(args[0].asString(rt).utf8(rt), (int)args[1].asNumber());
+
+				return jsi::Value(); });
+
+
+		jsi::Object module = jsi::Object(jsiRuntime);
+		module.setProperty(jsiRuntime, "init", move(init));
+		module.setProperty(jsiRuntime, "getTile", move(getTile));
+		module.setProperty(jsiRuntime, "getChildren", move(getChildren));
+		module.setProperty(jsiRuntime, "getLeaves", move(getLeaves));
+		module.setProperty(jsiRuntime, "getClusterExpansionZoom", move(getClusterExpansionZoom));
+
+		jsiRuntime.global().setProperty(jsiRuntime, "clustererModule", move(module));
 	}
 
 }
