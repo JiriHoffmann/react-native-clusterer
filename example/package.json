@@ -11,11 +11,15 @@
   "dependencies": {
     "react": "17.0.2",
     "react-native": "0.66.3",
-    "react-native-clusterer": "../"
+    "react-native-clusterer": "file:..",
+    "supercluster": "^7.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",
     "@babel/runtime": "^7.16.3",
+    "@types/react": "^17.0.37",
+    "@types/react-native": "^0.66.8",
+    "@types/supercluster": "^5.0.3",
     "babel-plugin-module-resolver": "^4.1.0",
     "metro-react-native-babel-preset": "^0.66.2"
   }
