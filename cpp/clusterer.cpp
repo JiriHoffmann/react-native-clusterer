@@ -64,8 +64,7 @@ mapbox::supercluster::Options cluster_parseJSIOptions(jsi::Runtime &rt, jsi::Val
             else
                 jsi::detail::throwJSError(rt, "Expected number for radius");
         }
-        else
-            jsi::detail::throwJSError(rt, "Expected radius property");
+
 
         if(obj.hasProperty(rt, "minZoom")){
             jsi::Value minZoom = obj.getProperty(rt, "minZoom");
@@ -75,8 +74,7 @@ mapbox::supercluster::Options cluster_parseJSIOptions(jsi::Runtime &rt, jsi::Val
             else
                 jsi::detail::throwJSError(rt, "Expected number for minZoom");
         }
-        else
-            jsi::detail::throwJSError(rt, "Expected minZoom property");
+
 
         if(obj.hasProperty(rt, "maxZoom")){
             jsi::Value maxZoom = obj.getProperty(rt, "maxZoom");
@@ -86,8 +84,7 @@ mapbox::supercluster::Options cluster_parseJSIOptions(jsi::Runtime &rt, jsi::Val
             else
                 jsi::detail::throwJSError(rt, "Expected number for maxZoom");
         }
-        else
-            jsi::detail::throwJSError(rt, "Expected maxZoom property");
+
 
         if(obj.hasProperty(rt, "extent")){
             jsi::Value extent = obj.getProperty(rt, "extent");
@@ -97,8 +94,8 @@ mapbox::supercluster::Options cluster_parseJSIOptions(jsi::Runtime &rt, jsi::Val
             else
                 jsi::detail::throwJSError(rt, "Expected number for extent");
         }
-        else
-            jsi::detail::throwJSError(rt, "Expected extent property");
+
+
         if(obj.hasProperty(rt, "minPoints")){
             jsi::Value minPoints = obj.getProperty(rt, "minPoints");
             if(minPoints.isNumber()){
@@ -107,8 +104,7 @@ mapbox::supercluster::Options cluster_parseJSIOptions(jsi::Runtime &rt, jsi::Val
             else
                 jsi::detail::throwJSError(rt, "Expected number for minPoints");
         }
-        else
-            jsi::detail::throwJSError(rt, "Expected minPoints property");
+
     }
     else
         jsi::detail::throwJSError(rt, "Expected object for options");
