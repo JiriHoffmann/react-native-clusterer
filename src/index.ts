@@ -1,6 +1,3 @@
-//@ts-ignore
-const module = global.clustererModule
-
 const getRandomId = () =>{
   return `${Math.floor(Math.random() * Math.floor(Math.random() * Date.now()))}`
 }
@@ -13,6 +10,8 @@ interface SuperclusterOptions {
   minSize?: number,
 }
 
+// @ts-ignore
+const module = global.clustererModule
 export default class Clusterer {
   private id: string
 
@@ -40,4 +39,5 @@ export default class Clusterer {
   getClusterExpansionZoom(clusterId: string): number {
     return module.getClusterExpansionZoom(this.id, clusterId);
   }
+  
 }
