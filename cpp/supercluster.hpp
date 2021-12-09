@@ -1936,8 +1936,6 @@ namespace mapbox
             std::function<void(property_map &, const property_map &)> reduce{nullptr};
         };
 
-
-
         class Supercluster
         {
             using GeoJSONPoint = point<double>;
