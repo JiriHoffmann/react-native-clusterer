@@ -4,15 +4,6 @@
 #include "clusterer.h"
 #include "supercluster.hpp"
 
-#include <android/log.h>
-#define LOG_TAG "RNClustererJNI"
-#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
-#define LOGSIMPLE(...)
-
 using namespace std;
 using namespace facebook;
 
@@ -237,7 +228,6 @@ jsi::Object tileToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &
     const auto itr = f.properties.find("cluster");
     if (itr != f.properties.end() && itr->second.get<bool>())
     {
-        LOGW("Inside cluster");
         double cluster_id = f.properties["cluster_id"].get<uint64_t>();
         double point_count = f.properties["point_count"].get<uint64_t>();
         auto pc_abbreviated = f.properties["point_count_abbreviated"].get<string>();
@@ -249,7 +239,6 @@ jsi::Object tileToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &
     }
     else
     {
-        LOGW("Inside point");
         // TODO: pass tags from points
     }
     result.setProperty(rt, "tags", tags);
