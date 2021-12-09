@@ -4,6 +4,15 @@
 #include "clusterer.h"
 #include "supercluster.hpp"
 
+#include <android/log.h>
+#define  LOG_TAG    "RNClustererJNI"
+#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG,__VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG  , LOG_TAG,__VA_ARGS__)
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO   , LOG_TAG,__VA_ARGS__)
+#define LOGW(...) __android_log_print(ANDROID_LOG_WARN   , LOG_TAG,__VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR  , LOG_TAG,__VA_ARGS__)
+#define LOGSIMPLE(...)
+
 using namespace std;
 using namespace facebook;
 
@@ -16,19 +25,44 @@ void cluster_init(string name, jsi::Runtime &rt, jsi::Value const &v1, jsi::Valu
     clusterMap[name] = cluster;
 }
 
-mapbox::supercluster::TileFeatures cluster_getTile(string name, int zoom, int x, int y){
+jsi::Array cluster_getTile(string name, jsi::Runtime &rt, int zoom, int x, int y){
     mapbox::supercluster::Supercluster *cluster = clusterMap[name];
-    return cluster->getTile(zoom, x, y);
+    auto tile = cluster->getTile(zoom, x, y);
+
+    jsi::Array result = jsi::Array(rt, tile.size());
+    int i = 0;
+    for (auto &f : tile) {
+        result.setValueAtIndex(rt, i, tileToJSIObject(rt, f, true));
+        i++;
+    }
+    return result;
 }
 
-mapbox::supercluster::GeoJSONFeatures cluster_getChildren(string name, int cluster_id){
+jsi::Array cluster_getChildren(string name,  jsi::Runtime &rt, int cluster_id){
     mapbox::supercluster::Supercluster *cluster = clusterMap[name];
-    return cluster->getChildren(cluster_id);
+    auto children = cluster->getChildren(cluster_id);
+    jsi::Array result = jsi::Array(rt, children.size());
+    int i = 0;
+    for (auto &f : children) {
+        result.setValueAtIndex(rt, i, tileToJSIObject(rt, f, false));
+        i++;
+    }
+
+    return result;
 }
 
-mapbox::supercluster::GeoJSONFeatures cluster_getLeaves(string name, int cluster_id, int limit, int offset){
+jsi::Array cluster_getLeaves(string name, jsi::Runtime &rt, int cluster_id, int limit, int offset){
     mapbox::supercluster::Supercluster *cluster = clusterMap[name];
-    return cluster->getLeaves(cluster_id, limit, offset);
+    auto leaves = cluster->getLeaves(cluster_id, limit, offset);
+
+    jsi::Array result = jsi::Array(rt, leaves.size());
+    int i = 0;
+    for (auto &f : leaves) {
+        result.setValueAtIndex(rt, i, tileToJSIObject(rt, f, false));
+        i++;
+    }
+
+    return result;
 }
 
 int cluster_getClusterExpansionZoom(string name, int cluster_id){
@@ -160,4 +194,37 @@ mapbox::feature::feature<double> parseJSIFeature(jsi::Runtime &rt, jsi::Value co
 };
 
 
+jsi::Object tileToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f, bool geometryAsInt){
+    jsi::Object result = jsi::Object(rt);
+    result.setProperty(rt,"type", 1);
+
+    jsi::Array geometryContainer = jsi::Array(rt, 1);
+    jsi::Array geometry = jsi::Array(rt, 2);
+    auto gem = f.geometry.get<mapbox::geometry::point<double>>();
+    geometry.setValueAtIndex(rt, 0, geometryAsInt ? jsi::Value((int)gem.x)  : jsi::Value(gem.x));
+    geometry.setValueAtIndex(rt, 1, geometryAsInt ? jsi::Value((int)gem.y)  : jsi::Value(gem.y));
+    geometryContainer.setValueAtIndex(rt, 0, geometry);
+
+    jsi::Object tags = jsi::Object(rt);
+
+    const auto itr = f.properties.find("cluster");
+    if (itr != f.properties.end() && itr->second.get<bool>()) {
+        LOGW("Inside cluster");
+        double cluster_id = f.properties["cluster_id"].get<uint64_t>();
+        double point_count = f.properties["point_count"].get<uint64_t>();
+        auto pc_abbreviated = f.properties["point_count_abbreviated"].get<string>();
+
+        tags.setProperty(rt, "cluster", true);
+        tags.setProperty(rt, "cluster_id", jsi::Value(cluster_id));
+        tags.setProperty(rt, "point_count", jsi::Value(point_count));
+        tags.setProperty(rt, "point_count_abbreviated", jsi::String::createFromUtf8(rt, pc_abbreviated));
+    } else{
+        LOGW("Inside point");
+        //TODO: pass tags from points
+    }
+    result.setProperty(rt, "tags", tags);
+    result.setProperty(rt, "geometry", geometry);
+
+    return result;
+}
 

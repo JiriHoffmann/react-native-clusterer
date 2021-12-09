@@ -42,9 +42,7 @@ namespace example
 					return {};
 				}
 
-				auto result = cluster_getTile(args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber());
-
-				return jsi::Value((int)result.size()); });
+				return  cluster_getTile(args[0].asString(rt).utf8(rt), rt, (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
 
 		auto getChildren = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getTile"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																 {
@@ -60,10 +58,7 @@ namespace example
 					return {};
 				}
 
-				auto result = cluster_getChildren(args[0].asString(rt).utf8(rt), (int)args[1].asNumber());
-
-
-				return jsi::Value(); });
+				return cluster_getChildren(args[0].asString(rt).utf8(rt),rt , (int)args[1].asNumber()); });
 
 		auto getLeaves = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getLeaves"), 4, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 															   {
@@ -78,26 +73,22 @@ namespace example
 					return {};
 				}
 
-				auto result = cluster_getLeaves(args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber());
-				return jsi::Value(); });
+				return cluster_getLeaves(args[0].asString(rt).utf8(rt), rt, (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
 
 		auto getClusterExpansionZoom = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getLeaves"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																			 {
 				if (count != 2)
 				{
-					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getClusterExpansionZoom expects 2 arguments");
-					return {};
+					 jsi::detail::throwJSError(rt, "React-Native-Clusterer: getClusterExpansionZoom expects 2 arguments");
+					 return {};
 				}
 				if (!args[0].isString() || !args[1].isNumber())
 				{
-					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getClusterExpansionZoom expects string and a number as arguments");
-					return {};
+					 jsi::detail::throwJSError(rt, "React-Native-Clusterer: getClusterExpansionZoom expects string and a number as arguments");
+					 return {};
 				}
 
-				auto result = cluster_getClusterExpansionZoom(args[0].asString(rt).utf8(rt), (int)args[1].asNumber());
-
-				return jsi::Value(); });
-
+				return cluster_getClusterExpansionZoom(args[0].asString(rt).utf8(rt), (int)args[1].asNumber()); });
 
 		jsi::Object module = jsi::Object(jsiRuntime);
 		module.setProperty(jsiRuntime, "init", move(init));
