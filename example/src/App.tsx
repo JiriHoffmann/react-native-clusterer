@@ -1,32 +1,26 @@
 import React from 'react';
 import { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Button } from 'react-native';
-import { multiply } from 'react-native-clusterer';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import SuperclusterJS from './superclusterjs';
+import SuperclusterCPP from './superclustercpp';
+
 
 export default function App() {
-  const [input1, setInput1] = useState('');
-  const [input2, setInput2] = useState('');
-
-  const [result, setResult] = useState<number | undefined>();
-
-  const _handlePress = () => {
-    setResult(multiply(parseInt(input1), parseInt(input2)));
-  };
+  const [showMap, setShowMap] = useState<null | "js" | "cpp">(null);
 
   return (
     <View style={styles.container}>
-      <TextInput
-        value={input1}
-        onChangeText={setInput1}
-        style={styles.textInput}
-      ></TextInput>
-      <TextInput
-        value={input2}
-        onChangeText={setInput2}
-        style={styles.textInput}
-      ></TextInput>
-      <Button title={'Get Result'} onPress={_handlePress} />
-      <Text>Result: {result}</Text>
+      <View style={styles.content}>
+        {showMap === "js" && <SuperclusterJS />}
+        {showMap === "cpp" && <SuperclusterCPP />}
+      </View>
+
+      <View style={styles.buttonContainer}>
+
+        <TouchableOpacity style={styles.button} onPress={() => setShowMap("js")}><Text>JS Impementation</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => setShowMap("cpp")}><Text>C++ Impementation</Text></TouchableOpacity>
+
+      </View>
     </View>
   );
 }
@@ -34,19 +28,29 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
+  },
+  content: {
+    flex: 1,
+    padding: 20
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: "100%",
+  },
+  button: {
+    flex: 1,
+    marginHorizontal: 10,
+    borderRadius: 5,
     justifyContent: 'center',
-  },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
-  },
-  textInput: {
-    borderColor: 'black',
-    borderWidth: 1,
+    alignItems: 'center',
     height: 40,
-    width: 200,
-    margin: 10,
-  },
+    backgroundColor: '#8eb3ed'
+  }
 });
+
+
