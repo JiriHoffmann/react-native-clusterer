@@ -1,7 +1,3 @@
-const getRandomId = () =>{
-  return `${Math.floor(Math.random() * Math.floor(Math.random() * Date.now()))}`
-}
-
 interface SuperclusterOptions {
   radius?: number,
   maxZoom?: number,
@@ -16,13 +12,15 @@ export default class Clusterer {
   private id: string
 
   constructor(points: any, options?: SuperclusterOptions) {
-    this.id = getRandomId()
+    // generate random id
+    this.id = `${Math.floor(Math.random() * Math.floor(Math.random() * Date.now()))}`
     module.init(this.id, points, options);
   }
 
-  getClusters(bbox:any, zoom: number): any {
-    return null;
-  }
+  // TODO: 
+  // getClusters(bbox:any, zoom: number): any {
+  //   return module.getClusters(this.id, bbox, zoom);
+  // }
 
   getTile(x: number, y: number, z: number): any {
     return module.getTile(this.id, x, y, z);
