@@ -9,15 +9,16 @@ using namespace facebook;
 
 map<string, mapbox::supercluster::Supercluster *> clusterMap = map<string, mapbox::supercluster::Supercluster *>();
 
-void cluster_init(string name, jsi::Runtime &rt, jsi::Value const &v1, jsi::Value const &v2)
+void cluster_init(jsi::Runtime &rt, jsi::Value const &nVal, jsi::Value const &fVal, jsi::Value const &oVal)
 {
-    auto features = cluster_parseJSIFeatures(rt, v1);
-     auto options = cluster_parseJSIOptions(rt, v2);
+    auto name = nVal.asString(rt).utf8(rt);
+    auto features = cluster_parseJSIFeatures(rt, fVal);
+    auto options = cluster_parseJSIOptions(rt, oVal);
     auto *cluster = new mapbox::supercluster::Supercluster(features, options);
     clusterMap[name] = cluster;
 }
 
-jsi::Array cluster_getTile(string name, jsi::Runtime &rt, int zoom, int x, int y)
+jsi::Array cluster_getTile(jsi::Runtime &rt, string name, int zoom, int x, int y)
 {
     mapbox::supercluster::Supercluster *cluster = clusterMap[name];
     auto tile = cluster->getTile(zoom, x, y);
@@ -32,7 +33,7 @@ jsi::Array cluster_getTile(string name, jsi::Runtime &rt, int zoom, int x, int y
     return result;
 }
 
-jsi::Array cluster_getChildren(string name, jsi::Runtime &rt, int cluster_id)
+jsi::Array cluster_getChildren( jsi::Runtime &rt, string name,int cluster_id)
 {
     mapbox::supercluster::Supercluster *cluster = clusterMap[name];
     auto children = cluster->getChildren(cluster_id);
@@ -47,7 +48,7 @@ jsi::Array cluster_getChildren(string name, jsi::Runtime &rt, int cluster_id)
     return result;
 }
 
-jsi::Array cluster_getLeaves(string name, jsi::Runtime &rt, int cluster_id, int limit, int offset)
+jsi::Array cluster_getLeaves(jsi::Runtime &rt, string name, int cluster_id, int limit, int offset)
 {
     mapbox::supercluster::Supercluster *cluster = clusterMap[name];
     auto leaves = cluster->getLeaves(cluster_id, limit, offset);
@@ -138,7 +139,6 @@ mapbox::supercluster::Options cluster_parseJSIOptions(jsi::Runtime &rt, jsi::Val
             else
                 jsi::detail::throwJSError(rt, "Expected number for extent");
         }
-
         if (obj.hasProperty(rt, "minPoints"))
         {
             jsi::Value minPoints = obj.getProperty(rt, "minPoints");

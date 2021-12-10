@@ -9,13 +9,13 @@
 using namespace std;
 using namespace facebook;
 
-void cluster_init(string name, jsi::Runtime &rt, jsi::Value const &v1, jsi::Value const &v2);
+void cluster_init(jsi::Runtime &rt, jsi::Value const &nVal, jsi::Value const &fVal, jsi::Value const &oVal);
 
-jsi::Array cluster_getTile(string name, jsi::Runtime &rt, int zoom, int x, int y);
+jsi::Array cluster_getTile(jsi::Runtime &rt, string name, int zoom, int x, int y);
 
-jsi::Array cluster_getChildren(string name, jsi::Runtime &rt, int cluster_id);
+jsi::Array cluster_getChildren(jsi::Runtime &rt, string name, int cluster_id);
 
-jsi::Array cluster_getLeaves(string name, jsi::Runtime &rt, int cluster_id, int limit, int offset);
+jsi::Array cluster_getLeaves(jsi::Runtime &rt, string name, int cluster_id, int limit, int offset);
 
 int cluster_getClusterExpansionZoom(string name, int cluster_id);
 

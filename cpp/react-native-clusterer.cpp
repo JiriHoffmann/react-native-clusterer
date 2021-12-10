@@ -24,7 +24,7 @@ namespace clusterer
 					return {};
 				}
 
-				cluster_init(args[0].asString(rt).utf8(rt), rt, args[1], args[2]);
+				cluster_init(rt, args[0], args[1], args[2]);
 				return jsi::Value(); });
 
 		auto getTile = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getTile"), 4, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
@@ -41,7 +41,7 @@ namespace clusterer
 					return {};
 				}
 
-				return  cluster_getTile(args[0].asString(rt).utf8(rt), rt, (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
+				return  cluster_getTile(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
 
 		auto getChildren = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getTile"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																 {
@@ -57,7 +57,7 @@ namespace clusterer
 					return {};
 				}
 
-				return cluster_getChildren(args[0].asString(rt).utf8(rt),rt , (int)args[1].asNumber()); });
+				return cluster_getChildren(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber()); });
 
 		auto getLeaves = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getLeaves"), 4, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 															   {
@@ -72,7 +72,7 @@ namespace clusterer
 					return {};
 				}
 
-				return cluster_getLeaves(args[0].asString(rt).utf8(rt), rt, (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
+				return cluster_getLeaves(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
 
 		auto getClusterExpansionZoom = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getLeaves"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																			 {
@@ -99,5 +99,5 @@ namespace clusterer
 		jsiRuntime.global().setProperty(jsiRuntime, "clustererModule", move(module));
 	}
 
-	void cleanup(){}
+	void cleanup() {}
 }
