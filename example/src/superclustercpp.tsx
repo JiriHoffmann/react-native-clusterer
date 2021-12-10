@@ -10,7 +10,7 @@ export default function SuperclusterCPP() {
 
     const _handleRenderPress = () => {
         const initS = PerformanceNow();
-        const supercluster = new Clusterer(getRandomData(10000), superclusterOptions);
+        const supercluster = new Clusterer(getRandomData(1000), superclusterOptions);
         const initE = PerformanceNow();
 
         const getTileS = PerformanceNow();

@@ -11,7 +11,7 @@ export default function SuperclusterJS() {
     const _handleRenderPress = () => {
         const initS = PerformanceNow();
         const supercluster = new Supercluster(superclusterOptions);
-        supercluster.load(getRandomData(10000));
+        supercluster.load(getRandomData(1000));
         const initE = PerformanceNow();
 
         const getTileS = PerformanceNow();
