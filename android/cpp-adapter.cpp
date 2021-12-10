@@ -1,13 +1,15 @@
 #include <jni.h>
 #include "react-native-clusterer.h"
 
-extern "C" JNIEXPORT void JNICALL
-Java_com_reactnativeclusterer_ClustererModule_nativeInstall(JNIEnv *env, jobject thiz, jlong jsi)
+extern "C" 
+JNIEXPORT void JNICALL
+Java_com_reactnativeclusterer_ClustererModule_initialize(JNIEnv *env, jclass clazz, jlong jsi)
 {
-    auto runtime = reinterpret_cast<facebook::jsi::Runtime *>(jsi);
+    clusterer::install(*reinterpret_cast<facebook::jsi::Runtime*>(jsi));
+}
 
-    if (runtime)
-    {
-        example::install(*runtime);
-    }
+extern "C" 
+JNIEXPORT void JNICALL
+Java_com_reactnativeclusterer_ClustererModule_destruct(JNIEnv* env, jclass clazz) {
+    clusterer::cleanup();
 }

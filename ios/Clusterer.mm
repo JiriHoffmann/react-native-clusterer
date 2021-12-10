@@ -53,7 +53,11 @@ RCT_EXPORT_MODULE()
         return;
     }
     
-    example::install(*(facebook::jsi::Runtime *)cxxBridge.runtime);
+    clusterer::install(*(facebook::jsi::Runtime *)cxxBridge.runtime);
+}
+
+- (void)invalidate {
+   clusterer::cleanup();
 }
 
 @end

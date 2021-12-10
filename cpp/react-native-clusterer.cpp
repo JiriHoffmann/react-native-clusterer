@@ -5,12 +5,11 @@
 using namespace facebook;
 using namespace std;
 
-namespace example
+namespace clusterer
 {
 
 	void install(jsi::Runtime &jsiRuntime)
 	{
-
 		auto init = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "init"), 2, [](jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args, size_t count) -> jsi::Value
 														  {
 				if (count != 3)
@@ -100,4 +99,5 @@ namespace example
 		jsiRuntime.global().setProperty(jsiRuntime, "clustererModule", move(module));
 	}
 
+	void cleanup(){}
 }

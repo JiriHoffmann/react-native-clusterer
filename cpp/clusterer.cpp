@@ -11,8 +11,8 @@ map<string, mapbox::supercluster::Supercluster *> clusterMap = map<string, mapbo
 
 void cluster_init(string name, jsi::Runtime &rt, jsi::Value const &v1, jsi::Value const &v2)
 {
-    auto options = cluster_parseJSIOptions(rt, v1);
-    auto features = cluster_parseJSIFeatures(rt, v2);
+    auto features = cluster_parseJSIFeatures(rt, v1);
+     auto options = cluster_parseJSIOptions(rt, v2);
     auto *cluster = new mapbox::supercluster::Supercluster(features, options);
     clusterMap[name] = cluster;
 }

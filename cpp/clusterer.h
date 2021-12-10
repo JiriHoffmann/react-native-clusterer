@@ -27,4 +27,4 @@ mapbox::feature::feature_collection<double> cluster_parseJSIFeatures(jsi::Runtim
 
 jsi::Object tileToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f, bool geometryAsInt);
 
-#endif // CLUSTERER_CPP_H
+#endif // CLUSTERER_H

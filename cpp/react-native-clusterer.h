@@ -1,19 +1,14 @@
-#ifndef EXAMPLE_H
-#define EXAMPLE_H
+#ifndef REACT_NATIVE_CLUSTERER_H
+#define REACT_NATIVE_CLUSTERER_H
 
-namespace facebook
-{
-  namespace jsi
-  {
-    class Runtime;
-  }
-}
+#include <jsi/jsilib.h>
+#include <jsi/jsi.h>
 
-namespace example
+namespace clusterer
 {
 
   void install(facebook::jsi::Runtime &jsiRuntime);
-
+  void cleanup();
 }
 
-#endif /* EXAMPLE_H */
+#endif /* REACT_NATIVE_CLUSTERER_H */
