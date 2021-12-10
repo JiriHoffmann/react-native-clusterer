@@ -4,6 +4,7 @@ interface SuperclusterOptions {
   minZoom?: number,
   extent?: number,
   minSize?: number,
+  generateId?: boolean,
 }
 
 // @ts-ignore

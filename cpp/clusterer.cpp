@@ -149,6 +149,16 @@ mapbox::supercluster::Options cluster_parseJSIOptions(jsi::Runtime &rt, jsi::Val
             else
                 jsi::detail::throwJSError(rt, "Expected number for minPoints");
         }
+        if (obj.hasProperty(rt, "generateId"))
+        {
+            jsi::Value generateId = obj.getProperty(rt, "generateId");
+            if (generateId.isBool())
+            {  
+                options.generateId = generateId.getBool();
+            }
+            else
+                jsi::detail::throwJSError(rt, "Expected boolean for generateId");
+        }
     }
     else
         jsi::detail::throwJSError(rt, "Expected object for options");
