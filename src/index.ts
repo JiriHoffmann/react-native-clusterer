@@ -39,4 +39,7 @@ export default class Clusterer {
     return module.getClusterExpansionZoom(this.id, clusterId);
   }
   
+  destroy(): void {
+    module.destroyCluster(this.id);
+  }
 }

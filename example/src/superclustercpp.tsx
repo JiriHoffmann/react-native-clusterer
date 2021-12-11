@@ -17,6 +17,8 @@ export default function SuperclusterCPP() {
         const tileRes = supercluster.getTile(0, 0, 0);
         const getTileE = PerformanceNow();
 
+        supercluster.destroy();
+
         setPoints(JSON.stringify(tileRes));
         setTime([timeDelta(initS, initE),timeDelta(getTileS, getTileE)])
     }

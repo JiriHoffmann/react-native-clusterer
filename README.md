@@ -19,12 +19,25 @@ cd ios && pod install
 ## Usage
 
 ```js
-import Clusterer from "react-native-clusterer";
+import Clusterer from 'react-native-clusterer';
 
 // ...
 
 const supercluster = new Clusterer(points, options);
+const clusters = supercluster.getTile(2, 1, 2)
+
+// ...
+// Don't forget to clean up to free memory
+// Most likely implementation (on component unmount)
+useEffect(() => {
+  // ...
+  return () => {
+    supercluster.destroy();
+    // ...
+  };
+}, []);
 ```
+
 #### Points
 
 Array of [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) objects. Each feature's `geometry` must be a [GeoJSON Point](https://tools.ietf.org/html/rfc7946#section-3.1.2). Once loaded, index is immutable.
@@ -32,7 +45,7 @@ Array of [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) obje
 #### Options
 
 | Option     | Default | Description                                                       |
-|------------|---------|-------------------------------------------------------------------|
+| ---------- | ------- | ----------------------------------------------------------------- |
 | minZoom    | 0       | Minimum zoom level at which clusters are generated.               |
 | maxZoom    | 16      | Maximum zoom level at which clusters are generated.               |
 | minPoints  | 2       | Minimum number of points to form a cluster.                       |
@@ -43,7 +56,9 @@ Array of [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) obje
 ## Methods
 
 #### `getClusters(bbox, zoom)`
+
 TO-DO
+
 <!-- For the given `bbox` array (`[westLng, southLat, eastLng, northLat]`) and integer `zoom`, returns an array of clusters and points as [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) objects. -->
 
 #### `getTile(z, x, y)`
@@ -63,9 +78,15 @@ Returns all the points of a cluster (given its `cluster_id`), with pagination su
 
 Returns the zoom on which the cluster expands into several children (useful for "click to zoom" feature) given the cluster's `cluster_id`.
 
+#### `destroy()`
+
+Destroys the c++ cluster and frees its memory
+
 ## TO-DOs
+
 - Proper input and return types for methods
-- Implement ```getClusters(bbox, zoom)```
+- Implement `getClusters(bbox, zoom)`
+- Find a better implementation for `destroy()`
 - Parse and return additional Point properties added by users
 - Map/reduce options
 

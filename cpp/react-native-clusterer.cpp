@@ -43,7 +43,7 @@ namespace clusterer
 
 				return  cluster_getTile(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
 
-		auto getChildren = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getTile"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
+		auto getChildren = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getChildren"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																 {
 				if (count != 2)
 				{
@@ -74,7 +74,7 @@ namespace clusterer
 
 				return cluster_getLeaves(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
 
-		auto getClusterExpansionZoom = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getLeaves"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
+		auto getClusterExpansionZoom = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getClusterExpansionZoom"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																			 {
 				if (count != 2)
 				{
@@ -89,12 +89,18 @@ namespace clusterer
 
 				return cluster_getClusterExpansionZoom(args[0].asString(rt).utf8(rt), (int)args[1].asNumber()); });
 
+		auto destroyCluster = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "destroyCluster"), 1, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
+																			 {
+				cluster_destroyCluster(args[0].asString(rt).utf8(rt));
+				return jsi::Value() });
+
 		jsi::Object module = jsi::Object(jsiRuntime);
 		module.setProperty(jsiRuntime, "init", move(init));
 		module.setProperty(jsiRuntime, "getTile", move(getTile));
 		module.setProperty(jsiRuntime, "getChildren", move(getChildren));
 		module.setProperty(jsiRuntime, "getLeaves", move(getLeaves));
 		module.setProperty(jsiRuntime, "getClusterExpansionZoom", move(getClusterExpansionZoom));
+		module.setProperty(jsiRuntime, "destroyCluster", move(destroyCluster));
 
 		jsiRuntime.global().setProperty(jsiRuntime, "clustererModule", move(module));
 	}

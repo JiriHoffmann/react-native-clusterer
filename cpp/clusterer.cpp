@@ -12,8 +12,8 @@ map<string, mapbox::supercluster::Supercluster *> clusterMap = map<string, mapbo
 void cluster_init(jsi::Runtime &rt, jsi::Value const &nVal, jsi::Value const &fVal, jsi::Value const &oVal)
 {
     auto name = nVal.asString(rt).utf8(rt);
-    auto features = cluster_parseJSIFeatures(rt, fVal);
-    auto options = cluster_parseJSIOptions(rt, oVal);
+    auto features = parseJSIFeatures(rt, fVal);
+    auto options = parseJSIOptions(rt, oVal);
     auto *cluster = new mapbox::supercluster::Supercluster(features, options);
     clusterMap[name] = cluster;
 }
@@ -70,7 +70,19 @@ int cluster_getClusterExpansionZoom(string name, int cluster_id)
     return (int)cluster->getClusterExpansionZoom(cluster_id);
 }
 
-mapbox::feature::feature_collection<double> cluster_parseJSIFeatures(jsi::Runtime &rt, jsi::Value const &value)
+
+void cluster_destroyCluster(string name){
+    mapbox::supercluster::Supercluster *cluster = clusterMap[name];
+    delete cluster;
+    clusterMap.erase(name);
+}
+
+/*
+
+Helper functions
+
+*/
+mapbox::feature::feature_collection<double> parseJSIFeatures(jsi::Runtime &rt, jsi::Value const &value)
 {
     mapbox::feature::feature_collection<double> features;
     if (value.asObject(rt).isArray(rt))
@@ -89,7 +101,7 @@ mapbox::feature::feature_collection<double> cluster_parseJSIFeatures(jsi::Runtim
     return features;
 };
 
-mapbox::supercluster::Options cluster_parseJSIOptions(jsi::Runtime &rt, jsi::Value const &value)
+mapbox::supercluster::Options parseJSIOptions(jsi::Runtime &rt, jsi::Value const &value)
 {
     mapbox::supercluster::Options options;
     if (value.isObject())
@@ -153,7 +165,7 @@ mapbox::supercluster::Options cluster_parseJSIOptions(jsi::Runtime &rt, jsi::Val
         {
             jsi::Value generateId = obj.getProperty(rt, "generateId");
             if (generateId.isBool())
-            {  
+            {
                 options.generateId = generateId.getBool();
             }
             else

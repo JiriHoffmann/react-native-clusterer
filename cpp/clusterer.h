@@ -19,11 +19,13 @@ jsi::Array cluster_getLeaves(jsi::Runtime &rt, string name, int cluster_id, int 
 
 int cluster_getClusterExpansionZoom(string name, int cluster_id);
 
-mapbox::supercluster::Options cluster_parseJSIOptions(jsi::Runtime &rt, jsi::Value const &value);
+void cluster_destroyCluster(string name);
+
+mapbox::supercluster::Options parseJSIOptions(jsi::Runtime &rt, jsi::Value const &value);
 
 mapbox::feature::feature<double> parseJSIFeature(jsi::Runtime &rt, jsi::Value const &value);
 
-mapbox::feature::feature_collection<double> cluster_parseJSIFeatures(jsi::Runtime &rt, jsi::Value const &value);
+mapbox::feature::feature_collection<double> parseJSIFeatures(jsi::Runtime &rt, jsi::Value const &value);
 
 jsi::Object tileToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f, bool geometryAsInt);
 
