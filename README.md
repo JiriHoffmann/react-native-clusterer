@@ -1,8 +1,8 @@
 # React-native-clusterer
 
-React Native clustering library using a c++ implementation of [supercluster](https://github.com/mapbox/supercluster) and JSI bindings for up to 10x faster intial point loading times than its JavaScript counterpart.
+React Native clustering library using a c++ implementation of [supercluster](https://github.com/mapbox/supercluster) and JSI bindings for up to 10x faster initial point loading times than its JavaScript counterpart.
 
-Check out example for speed comparisons.
+Check out the example for speed comparisons.
 
 ## Installation
 
@@ -72,7 +72,7 @@ Returns the children of a cluster (on the next zoom level) given its id (`cluste
 #### `getLeaves(clusterId, limit = 10, offset = 0)`
 
 Returns all the points of a cluster (given its `cluster_id`), with pagination support:
-`limit` is the number of points to return, and `offset` is the amount of points to skip (for pagination).
+`limit` is the number of points to return, and `offset` is the number of points to skip (for pagination).
 
 #### `getClusterExpansionZoom(clusterId)`
 
