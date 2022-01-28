@@ -1,13 +1,13 @@
-buildscript {
+import java.nio.file.Paths
 
+buildscript {
+  // Buildscript is evaluated before everything else so we can't use getExtOrDefault
   repositories {
     google()
+    jcenter()
     mavenCentral()
-
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
   }
+
   dependencies {
     classpath 'com.android.tools.build:gradle:4.2.2'
   }
@@ -15,151 +15,149 @@ buildscript {
 
 apply plugin: 'com.android.library'
 
-def getExtOrDefault(name, defaultValue) {
-  return rootProject.ext.has(name) ? rootProject.ext.get(name) : defaultValue
+def getExtOrDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['RNClusterer_' + name]
 }
 
-def found = false
-def reactNativeDir = null
-def androidSourcesName = 'React Native sources'
-def parentDir = rootProject.projectDir
-
-if (rootProject.ext.has('reactNativeAndroidRoot')) {
-  reactNativeDir = rootProject.ext.get('reactNativeAndroidRoot')
-} else {
-  reactNativeDir = new File(
-    projectDir,
-    '/../../../node_modules/react-native/android'
-  )
+def getExtOrIntegerDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties['RNClusterer_' + name]).toInteger()
 }
-if (reactNativeDir.exists()) {
-  found = true
-} else {
-  1.upto(5, {
-    if (found) return true
-    parentDir = reactNativeDir.parentFile
 
-    reactNativeDir = new File(
-      parentDir,
-      'node_modules/react-native/android'
-    )
+static def findNodeModules(baseDir) {
+  def basePath = baseDir.toPath().normalize()
 
-    if (reactNativeDir.exists()) {
-      found = true
+  // Find node_modules inside the example project
+  def exampleNodeModules = Paths.get(basePath.getParent().toString(), "example/node_modules")
+  if(exampleNodeModules.toFile().exists()) {
+    return exampleNodeModules.toString().replace("\\", "/")
+  }
+
+  // Node's module resolution algorithm searches up to the root directory,
+  // after which the base path will be null
+  while (basePath) {
+    def nodeModulesPath = Paths.get(basePath.toString(), "node_modules")
+    def reactNativePath = Paths.get(nodeModulesPath.toString(), "react-native")
+    if (nodeModulesPath.toFile().exists() && reactNativePath.toFile().exists()) {
+      return nodeModulesPath.toString().replace("\\", "/")
     }
-  })
+    basePath = basePath.getParent()
+  }
+  throw new GradleException("react-native-clusterer: Failed to find node_modules/ path!")
 }
 
+def nodeModules = findNodeModules(projectDir);
+logger.warn("react-native-clusterer: node_modules/ found at: ${nodeModules}");
 
 android {
-  compileSdkVersion getExtOrDefault('compileSdkVersion', 30)
+  compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
+  buildToolsVersion getExtOrDefault('buildToolsVersion')
+  ndkVersion getExtOrDefault('ndkVersion')
 
   defaultConfig {
-    minSdkVersion getExtOrDefault('minSdkVersion', 21)
-    targetSdkVersion getExtOrDefault('targetSdkVersion', 30)
+    minSdkVersion 21
+    targetSdkVersion getExtOrIntegerDefault('targetSdkVersion')
+    versionCode 1
+    versionName "1.0"
 
     externalNativeBuild {
-      cmake {
-        cppFlags "-fexceptions", "-frtti", "-std=c++1y", "-DONANDROID"
-        abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
-        arguments '-DANDROID_STL=c++_shared', "-DNODE_MODULES_DIR=${reactNativeDir.parentFile.parentFile.toString()}"
-      }
+        cmake {
+            cppFlags "-O2 -frtti -fexceptions -Wall -fstack-protector-all"
+            abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
+            arguments "-DNODE_MODULES_DIR=${nodeModules}"
+        }
     }
-  }
 
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
-  }
-
-  lintOptions{
-    abortOnError false
-    disable 'GradleCompatible'
   }
 
   externalNativeBuild {
-    cmake {
-      path "./CMakeLists.txt"
+      cmake {
+          path "CMakeLists.txt"
+      }
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
     }
   }
-
-  packagingOptions {
-    excludes = ["**/libc++_shared.so","**/libjsi.so","**/libreactnativejni.so", "META-INF/MANIFEST.MF"]
+  lintOptions {
+    disable 'GradleCompatible'
   }
-
-  configurations {
-    extractJNI
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
   }
 }
 
 repositories {
   mavenCentral()
-  mavenLocal()
+  jcenter()
   google()
 
-  if (reactNativeDir.exists()) {
+  def found = false
+  def defaultDir = null
+  def androidSourcesName = 'React Native sources'
+
+  if (rootProject.ext.has('reactNativeAndroidRoot')) {
+    defaultDir = rootProject.ext.get('reactNativeAndroidRoot')
+  } else {
+    defaultDir = file("$nodeModules/react-native/android")
+  }
+
+  if (defaultDir.exists()) {
     maven {
-      url reactNativeDir.toString()
+      url defaultDir.toString()
       name androidSourcesName
     }
-    logger.info(":${project.name}:reactNativeAndroidRoot ${reactNativeDir.canonicalPath}")
+
+    logger.info(":${project.name}:reactNativeAndroidRoot ${defaultDir.canonicalPath}")
+    found = true
+  } else {
+    def parentDir = rootProject.projectDir
+
+    1.upto(5, {
+      if (found) return true
+      parentDir = parentDir.parentFile
+
+      def androidSourcesDir = new File(
+              parentDir,
+              'node_modules/react-native'
+      )
+
+      def androidPrebuiltBinaryDir = new File(
+              parentDir,
+              'node_modules/react-native/android'
+      )
+
+      if (androidPrebuiltBinaryDir.exists()) {
+        maven {
+          url androidPrebuiltBinaryDir.toString()
+          name androidSourcesName
+        }
+
+        logger.info(":${project.name}:reactNativeAndroidRoot ${androidPrebuiltBinaryDir.canonicalPath}")
+        found = true
+      } else if (androidSourcesDir.exists()) {
+        maven {
+          url androidSourcesDir.toString()
+          name androidSourcesName
+        }
+
+        logger.info(":${project.name}:reactNativeAndroidRoot ${androidSourcesDir.canonicalPath}")
+        found = true
+      }
+    })
   }
 
   if (!found) {
     throw new GradleException(
-      "${project.name}: unable to locate React Native android sources. " +
-        "Ensure you have you installed React Native as a dependency in your project and try again."
+            "${project.name}: unable to locate React Native android sources. " +
+                    "Ensure you have you installed React Native as a dependency in your project and try again."
     )
   }
-
 }
 
 dependencies {
-  //noinspection GradleDynamicVersion
-  implementation 'com.facebook.react:react-native:+'
-  implementation "com.scottyab:secure-preferences-lib:0.1.4"
-  implementation 'com.google.code.gson:gson:2.8.6'
-
-  def rnAAR = fileTree(reactNativeDir.toString()).matching({ it.include "**/**/*.aar" }).singleFile
-  extractJNI(files(rnAAR))
-}
-
-task extractJNIFiles {
-
-  doLast {
-    configurations.extractJNI.files.each {
-      def file = it.absoluteFile
-
-      copy {
-        from zipTree(file)
-        into "$buildDir/$file.name"
-        include "jni/**/*"
-      }
-    }
-  }
-}
-
-task extractJNIFilesForRelease {
-
-  doLast {
-    configurations.extractJNI.files.each {
-      def file = it.absoluteFile
-
-      copy {
-        from zipTree(file)
-        into "$buildDir/$file.name"
-        include "jni/**/*"
-      }
-    }
-  }
-}
-
-tasks.whenTaskAdded { task ->
-  if (task.name.contains('generateJsonModelDebug') || task.name.contains('externalNativeBuild')) {
-    task.dependsOn(extractJNIFiles);
-  }
-
-  if (task.name.contains('generateJsonModelRelease')) {
-    task.dependsOn(extractJNIFilesForRelease)
-  }
+  // noinspection GradleDynamicVersion
+  api 'com.facebook.react:react-native:+'
 }

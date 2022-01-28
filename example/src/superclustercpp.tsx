@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, Button, ScrollView } from 'react-native';
 import { PerformanceNow, superclusterOptions, timeDelta } from './utils';
 import { getRandomData } from './places';
-import Clusterer from 'react-native-clusterer';
+import Supercluster from 'react-native-clusterer';
 
 export default function SuperclusterCPP() {
     const [time, setTime] = useState<string[]>(["0", "0"]);
@@ -10,7 +10,7 @@ export default function SuperclusterCPP() {
 
     const _handleRenderPress = () => {
         const initS = PerformanceNow();
-        const supercluster = new Clusterer(getRandomData(1000), superclusterOptions);
+        const supercluster = new Supercluster(getRandomData(1000), superclusterOptions);
         const initE = PerformanceNow();
 
         const getTileS = PerformanceNow();

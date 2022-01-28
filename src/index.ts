@@ -1,21 +1,44 @@
-interface SuperclusterOptions {
-  radius?: number,
-  maxZoom?: number,
-  minZoom?: number,
-  extent?: number,
-  minSize?: number,
-  generateId?: boolean,
+import { NativeModules, Platform } from 'react-native';
+
+const module = NativeModules.Clusterer;
+
+if (module && typeof module.install === 'function') {
+  module.install();
 }
 
 // @ts-ignore
-const module = global.clustererModule
-export default class Clusterer {
-  private id: string
+const clusterer = (global as any).clustererModule;
+
+interface SuperclusterOptions {
+  radius?: number;
+  maxZoom?: number;
+  minZoom?: number;
+  extent?: number;
+  minSize?: number;
+  generateId?: boolean;
+}
+
+export default class Supercluster {
+  private id: string;
 
   constructor(points: any, options?: SuperclusterOptions) {
+    if (!clusterer) {
+      throw new Error(
+        `The package 'react-native-cryptopp' doesn't seem to be linked. Make sure: \n\n` +
+          Platform.select({
+            ios: "- You have run 'pod install'\n",
+            default: '',
+          }) +
+          '- You rebuilt the app after installing the package\n' +
+          '- You are not using Expo managed workflow\n'
+      );
+    }
+
     // generate random id
-    this.id = `${Math.floor(Math.random() * Math.floor(Math.random() * Date.now()))}`
-    module.init(this.id, points, options);
+    this.id = `${Math.floor(
+      Math.random() * Math.floor(Math.random() * Date.now())
+    )}`;
+    clusterer.init(this.id, points, options);
   }
 
   // TODO: 
@@ -24,22 +47,22 @@ export default class Clusterer {
   // }
 
   getTile(x: number, y: number, z: number): any {
-    return module.getTile(this.id, x, y, z);
+    return clusterer.getTile(this.id, x, y, z);
   }
-  
+
   getChildren(clusterId: string): any {
-    return module.getChildren(this.id, clusterId);
+    return clusterer.getChildren(this.id, clusterId);
   }
 
   getLeaves(clusterId: string, limit?: number, offset?: number): any {
-    return module.getLeaves(this.id, clusterId, limit ?? 10, offset ?? 0);
+    return clusterer.getLeaves(this.id, clusterId, limit ?? 10, offset ?? 0);
   }
 
   getClusterExpansionZoom(clusterId: string): number {
-    return module.getClusterExpansionZoom(this.id, clusterId);
+    return clusterer.getClusterExpansionZoom(this.id, clusterId);
   }
-  
+
   destroy(): void {
-    module.destroyCluster(this.id);
+    clusterer.destroyCluster(this.id);
   }
 }

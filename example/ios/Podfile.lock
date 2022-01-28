@@ -407,7 +407,7 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
-  - react-native-clusterer (from `../node_modules/react-native-clusterer`)
+  - react-native-clusterer (from `../..`)
   - react-native-maps (from `../node_modules/react-native-maps`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -479,7 +479,7 @@ EXTERNAL SOURCES:
   React-logger:
     :path: "../node_modules/react-native/ReactCommon/logger"
   react-native-clusterer:
-    :path: "../node_modules/react-native-clusterer"
+    :path: "../.."
   react-native-maps:
     :path: "../node_modules/react-native-maps"
   React-perflogger:
@@ -542,7 +542,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 433a691aee158533a6a6ee9c86cb4a1684fa2853
   React-jsinspector: d9c8eb0b53f0da206fed56612b289fec84991157
   React-logger: e522e76fa3e9ec3e7d7115b49485cc065cf4ae06
-  react-native-clusterer: 2329ef2be0c535280c779ed6a6695f3d580e3dda
+  react-native-clusterer: 937dd0fe7a93acdb582fee315c76e31fb3d371d2
   react-native-maps: a421fe6aeb74279597c4ea9598f25796108e2d89
   React-perflogger: 73732888d37d4f5065198727b167846743232882
   React-RCTActionSheet: 96c6d774fa89b1f7c59fc460adc3245ba2d7fd79
@@ -559,6 +559,6 @@ SPEC CHECKSUMS:
   Yoga: 32a18c0e845e185f4a2a66ec76e1fd1f958f22fa
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: eb4ae04ff900b670794a6bfa92c8f26fa777239e
+PODFILE CHECKSUM: 723fda685df253aa74bc288a81dccb6bf6bed697
 
 COCOAPODS: 1.11.2

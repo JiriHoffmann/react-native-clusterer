@@ -16,7 +16,7 @@ include_directories(
 add_library(
         ${PACKAGE_NAME}
         SHARED
-        ../../react-native/ReactCommon/jsi/jsi/jsi.cpp
+        "${NODE_MODULES_DIR}/react-native/ReactCommon/jsi/jsi/jsi.cpp"
         ../cpp/react-native-clusterer.cpp
         ../cpp/react-native-clusterer.h
         ../cpp/supercluster.hpp

@@ -1,27 +1,40 @@
 import React from 'react';
 import { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
 import SuperclusterJS from './superclusterjs';
 import SuperclusterCPP from './superclustercpp';
 
-
 export default function App() {
-  const [showMap, setShowMap] = useState<null | "js" | "cpp">(null);
+  const [showMap, setShowMap] = useState<null | 'js' | 'cpp'>(null);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {showMap === "js" && <SuperclusterJS />}
-        {showMap === "cpp" && <SuperclusterCPP />}
+        {showMap === 'js' && <SuperclusterJS />}
+        {showMap === 'cpp' && <SuperclusterCPP />}
       </View>
 
       <View style={styles.buttonContainer}>
-
-        <TouchableOpacity style={styles.button} onPress={() => setShowMap("js")}><Text>JS Impementation</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => setShowMap("cpp")}><Text>C++ Impementation</Text></TouchableOpacity>
-
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setShowMap('js')}
+        >
+          <Text>JS Impementation</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setShowMap('cpp')}
+        >
+          <Text>C++ Impementation</Text>
+        </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -31,7 +44,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 20
+    padding: 20,
   },
   buttonContainer: {
     position: 'absolute',
@@ -40,7 +53,7 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    width: "100%",
+    width: '100%',
   },
   button: {
     flex: 1,
@@ -49,8 +62,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     height: 40,
-    backgroundColor: '#8eb3ed'
-  }
+    backgroundColor: '#8eb3ed',
+  },
 });
-
-

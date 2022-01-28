@@ -2,39 +2,37 @@ package com.reactnativeclusterer;
 
 import androidx.annotation.NonNull;
 
-import com.facebook.react.bridge.JavaScriptContextHolder;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ReactMethod;
 
-class ClustererModule extends ReactContextBaseJavaModule {
-    static {
-        System.loadLibrary("clusterer");
+public class ClustererModule extends ReactContextBaseJavaModule {
+  public static final String NAME = "Clusterer";
+  private static native void initialize(long jsiPtr, String docDir);
+
+  public ClustererModule(ReactApplicationContext reactContext) {
+    super(reactContext);
+  }
+
+  @NonNull
+  @Override
+  public String getName() {
+    return "Clusterer";
+  }
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public boolean install() {
+    try {
+      System.loadLibrary("clusterer");
+
+      ReactApplicationContext context = getReactApplicationContext();
+      initialize(
+        context.getJavaScriptContextHolder().get(),
+        context.getFilesDir().getAbsolutePath()
+      );
+      return true;
+    } catch (Exception exception) {
+      return false;
     }
-
-    private static native void initialize(long jsiPtr, String docDir);
-    private static native void destruct();
-
-    public ClustererModule(ReactApplicationContext reactContext) {
-        super(reactContext);
-    }
-
-    @Override
-    @NonNull
-    public String getName() {
-        return "Clusterer";
-    }
-
-    @Override
-    public void initialize() {
-        super.initialize();
-
-        ClustererModule.initialize(
-            this.getReactApplicationContext().getJavaScriptContextHolder().get(),
-            this.getReactApplicationContext().getFilesDir().getAbsolutePath());
-    }
-
-    @Override
-    public void onCatalystInstanceDestroy() {
-        ClustererModule.destruct();
-    }
+  }
 }
