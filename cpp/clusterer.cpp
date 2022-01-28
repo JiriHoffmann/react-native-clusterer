@@ -77,6 +77,14 @@ void cluster_destroyCluster(const string& name){
     clusterMap.erase(name);
 }
 
+void cluster_cleanup(){
+    for (const auto& cluster : clusterMap) {
+        delete cluster.second;
+    }
+    clusterMap.clear();
+}
+
+
 /*
 
 Helper functions

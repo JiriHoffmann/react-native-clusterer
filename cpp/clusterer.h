@@ -19,7 +19,15 @@ jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string& name, int cluster_i
 
 int cluster_getClusterExpansionZoom(const string& name, int cluster_id);
 
-void cluster_destroyCluster(string name);
+void cluster_destroyCluster(const string& name);
+
+void cluster_cleanup();
+
+/*
+
+Helper functions
+
+*/
 
 mapbox::supercluster::Options parseJSIOptions(jsi::Runtime &rt, jsi::Value const &value);
 

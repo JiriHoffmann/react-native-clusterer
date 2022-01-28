@@ -111,5 +111,7 @@ namespace clusterer
 		jsiRuntime.global().setProperty(jsiRuntime, "clustererModule", move(module));
 	}
 
-	void cleanup() {}
+	void cleanup() {
+		cluster_cleanup();
+	}
 }
