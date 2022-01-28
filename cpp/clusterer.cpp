@@ -27,7 +27,7 @@ jsi::Array cluster_getTile(jsi::Runtime &rt, const string& name, int zoom, int x
     int i = 0;
     for (auto &f : tile)
     {
-        result.setValueAtIndex(rt, i, tileToJSIObject(rt, f, true));
+        result.setValueAtIndex(rt, i, featureToJSIObject(rt, f, true));
         i++;
     }
     return result;
@@ -41,7 +41,7 @@ jsi::Array cluster_getChildren( jsi::Runtime &rt, const string& name,int cluster
     int i = 0;
     for (auto &f : children)
     {
-        result.setValueAtIndex(rt, i, tileToJSIObject(rt, f, false));
+        result.setValueAtIndex(rt, i, featureToJSIObject(rt, f, false));
         i++;
     }
 
@@ -57,7 +57,7 @@ jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string& name, int cluster_i
     int i = 0;
     for (auto &f : leaves)
     {
-        result.setValueAtIndex(rt, i, tileToJSIObject(rt, f, false));
+        result.setValueAtIndex(rt, i, featureToJSIObject(rt, f, false));
         i++;
     }
 
@@ -233,7 +233,7 @@ mapbox::feature::feature<double> parseJSIFeature(jsi::Runtime &rt, jsi::Value co
     return feature;
 };
 
-jsi::Object tileToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f, bool geometryAsInt)
+jsi::Object featureToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f, bool geometryAsInt)
 {
     jsi::Object result = jsi::Object(rt);
     result.setProperty(rt, "type", 1);
@@ -263,8 +263,8 @@ jsi::Object tileToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &
     {
         // TODO: pass tags from points
     }
+    result.setProperty(rt, "geometry", geometryContainer);
     result.setProperty(rt, "tags", tags);
-    result.setProperty(rt, "geometry", geometry);
 
     return result;
 }
