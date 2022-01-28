@@ -18,7 +18,7 @@ void cluster_init(jsi::Runtime &rt, jsi::Value const &nVal, jsi::Value const &fV
     clusterMap[name] = cluster;
 }
 
-jsi::Array cluster_getTile(jsi::Runtime &rt, string name, int zoom, int x, int y)
+jsi::Array cluster_getTile(jsi::Runtime &rt, const string& name, int zoom, int x, int y)
 {
     mapbox::supercluster::Supercluster *cluster = clusterMap[name];
     auto tile = cluster->getTile(zoom, x, y);
@@ -33,7 +33,7 @@ jsi::Array cluster_getTile(jsi::Runtime &rt, string name, int zoom, int x, int y
     return result;
 }
 
-jsi::Array cluster_getChildren( jsi::Runtime &rt, string name,int cluster_id)
+jsi::Array cluster_getChildren( jsi::Runtime &rt, const string& name,int cluster_id)
 {
     mapbox::supercluster::Supercluster *cluster = clusterMap[name];
     auto children = cluster->getChildren(cluster_id);
@@ -48,7 +48,7 @@ jsi::Array cluster_getChildren( jsi::Runtime &rt, string name,int cluster_id)
     return result;
 }
 
-jsi::Array cluster_getLeaves(jsi::Runtime &rt, string name, int cluster_id, int limit, int offset)
+jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string& name, int cluster_id, int limit, int offset)
 {
     mapbox::supercluster::Supercluster *cluster = clusterMap[name];
     auto leaves = cluster->getLeaves(cluster_id, limit, offset);
@@ -64,14 +64,14 @@ jsi::Array cluster_getLeaves(jsi::Runtime &rt, string name, int cluster_id, int 
     return result;
 }
 
-int cluster_getClusterExpansionZoom(string name, int cluster_id)
+int cluster_getClusterExpansionZoom(const string& name, int cluster_id)
 {
     mapbox::supercluster::Supercluster *cluster = clusterMap[name];
     return (int)cluster->getClusterExpansionZoom(cluster_id);
 }
 
 
-void cluster_destroyCluster(string name){
+void cluster_destroyCluster(const string& name){
     mapbox::supercluster::Supercluster *cluster = clusterMap[name];
     delete cluster;
     clusterMap.erase(name);
