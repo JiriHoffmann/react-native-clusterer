@@ -188,56 +188,48 @@ mapbox::supercluster::Options parseJSIOptions(jsi::Runtime &rt, jsi::Value const
 mapbox::feature::feature<double> parseJSIFeature(jsi::Runtime &rt, jsi::Value const &value)
 {
     mapbox::feature::feature<double> feature;
-    if (value.isObject())
-    {
-        jsi::Object obj = value.asObject(rt);
-
-        if (!obj.hasProperty(rt, "type") || !strcmp(obj.getProperty(rt, "type").asString(rt).utf8(rt).c_str(), "Point"))
-            jsi::detail::throwJSError(rt, "Expected GeoJSON Feature object with type 'Point'");
-
-        if (obj.hasProperty(rt, "geometry"))
-        {
-            jsi::Value geometry = obj.getProperty(rt, "geometry");
-            if (geometry.isObject())
-            {
-                jsi::Object geoObj = geometry.asObject(rt);
-                if (geoObj.hasProperty(rt, "coordinates"))
-                {
-                    jsi::Value coordinates = geoObj.getProperty(rt, "coordinates");
-                    if (coordinates.asObject(rt).isArray(rt))
-                    {
-                        jsi::Array arr = coordinates.asObject(rt).asArray(rt);
-                        if (arr.size(rt) == 2)
-                        {
-                            jsi::Value x = arr.getValueAtIndex(rt, 0);
-                            jsi::Value y = arr.getValueAtIndex(rt, 1);
-                            if (x.isNumber() && y.isNumber())
-                            {
-                                double lng = x.asNumber();
-                                double lat = y.asNumber();
-                                mapbox::geometry::point<double> point(lng, lat);
-                                feature.geometry = point;
-                            }
-                            else
-                                jsi::detail::throwJSError(rt, "Expected number for coordinates");
-                        }
-                        else
-                            jsi::detail::throwJSError(rt, "Expected array of size 2 for coordinates");
-                    }
-                    else
-                        jsi::detail::throwJSError(rt, "Expected array for coordinates");
-                }
-                else
-                    jsi::detail::throwJSError(rt, "Expected coordinates property");
-            }
-            else
-                jsi::detail::throwJSError(rt, "Expected geometry object");
-        }
-        else
-            jsi::detail::throwJSError(rt, "Expected geometry property");
-    }
-    else
+    if (!value.isObject())
         jsi::detail::throwJSError(rt, "Expected GeoJSON Feature object");
+
+    jsi::Object obj = value.asObject(rt);
+
+    if (!obj.hasProperty(rt, "type") || !strcmp(obj.getProperty(rt, "type").asString(rt).utf8(rt).c_str(), "Point"))
+        jsi::detail::throwJSError(rt, "Expected GeoJSON Feature object with type 'Point'");
+
+    if (!obj.hasProperty(rt, "geometry"))
+        jsi::detail::throwJSError(rt, "Expected geometry object");
+
+    jsi::Value geometry = obj.getProperty(rt, "geometry");
+
+    if (!geometry.isObject())
+        jsi::detail::throwJSError(rt, "Expected geometry object");
+
+    jsi::Object geoObj = geometry.asObject(rt);
+
+    if (!geoObj.hasProperty(rt, "coordinates"))
+        jsi::detail::throwJSError(rt, "Expected coordinates property");
+
+    jsi::Value coordinates = geoObj.getProperty(rt, "coordinates");
+
+    if (!coordinates.asObject(rt).isArray(rt))
+        jsi::detail::throwJSError(rt, "Expected array for coordinates");
+
+    jsi::Array arr = coordinates.asObject(rt).asArray(rt);
+
+    if (arr.size(rt) != 2)
+        jsi::detail::throwJSError(rt, "Expected array of size 2 for coordinates");
+
+     jsi::Value x = arr.getValueAtIndex(rt, 0);
+     jsi::Value y = arr.getValueAtIndex(rt, 1);
+
+     if (!x.isNumber() || !y.isNumber())
+         jsi::detail::throwJSError(rt, "Expected number for coordinates");
+
+      double lng = x.asNumber();
+      double lat = y.asNumber();
+      mapbox::geometry::point<double> point(lng, lat);
+      feature.geometry = point;
+
     return feature;
 };
 
