@@ -84,11 +84,11 @@ Destroys the c++ cluster and frees its memory
 
 ## TO-DOs
 
-- Proper input and return types for methods
-- Implement `getClusters(bbox, zoom)`
-- Find a better implementation for `destroy()`
-- Parse and return additional Point properties added by users
-- Map/reduce options
+- [x] Proper input and return types for methods
+- [x] Implement `getClusters(bbox, zoom)`
+- [ ] Find a better implementation for `destroy()`
+- [ ] Parse and return additional Point properties added by users
+- [ ] Map/reduce options
 
 ## Contributing
 
