@@ -9,7 +9,7 @@
 using namespace std;
 using namespace facebook;
 
-void cluster_init(jsi::Runtime &rt, jsi::Value const &nVal, jsi::Value const &fVal, jsi::Value const &oVal);
+void cluster_init(jsi::Runtime &rt, jsi::Value const &jsiName, jsi::Value const &jsiFeatures, jsi::Value const &jsiOptions);
 
 jsi::Array cluster_getTile(jsi::Runtime &rt, const string& name, int zoom, int x, int y);
 
@@ -31,16 +31,16 @@ Helper functions
 
 */
 
-mapbox::supercluster::Options parseJSIOptions(jsi::Runtime &rt, jsi::Value const &value);
+void parseJSIFeatures(jsi::Runtime &rt, mapbox::feature::feature_collection<double> &features, jsi::Value const &jsiFeatures);
 
-mapbox::feature::feature<double> parseJSIFeature(jsi::Runtime &rt, jsi::Value const &value);
+void parseJSIOptions(jsi::Runtime &rt, mapbox::supercluster::Options &options, jsi::Value const &jsiOptions);
 
-mapbox::feature::feature_collection<double> parseJSIFeatures(jsi::Runtime &rt, jsi::Value const &value);
+void parseJSIFeature(jsi::Runtime &rt, mapbox::feature::feature<double> &feature, jsi::Value const &jsiFeature);
 
-jsi::Object featureToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f, bool geometryAsInt);
+void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f, bool geometryAsInt);
 
-jsi::Object clusterFeatureToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f);
+void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f);
 
-jsi::Object propertiesToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f);
+void propertiesToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f);
 
 #endif // CLUSTERER_H

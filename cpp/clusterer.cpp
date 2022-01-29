@@ -10,25 +10,33 @@ using namespace facebook;
 
 map<string, mapbox::supercluster::Supercluster *> superclusterMap = map<string, mapbox::supercluster::Supercluster *>();
 
-void cluster_init(jsi::Runtime &rt, jsi::Value const &nVal, jsi::Value const &fVal, jsi::Value const &oVal)
+void cluster_init(jsi::Runtime &rt, jsi::Value const &jsiName, jsi::Value const &jsiFeatures, jsi::Value const &jsiOptions)
 {
-    auto name = nVal.asString(rt).utf8(rt);
-    auto features = parseJSIFeatures(rt, fVal);
-    auto options = parseJSIOptions(rt, oVal);
+    // jsi features to cpp
+    mapbox::feature::feature_collection<double> features;
+    parseJSIFeatures(rt, features, jsiFeatures);
+
+    // jsi options to cpp
+    mapbox::supercluster::Options options;
+    parseJSIOptions(rt, options, jsiOptions);
+
     auto *supercluster = new mapbox::supercluster::Supercluster(features, options);
+    auto name = jsiName.asString(rt).utf8(rt);
     superclusterMap[name] = supercluster;
 }
 
 jsi::Array cluster_getTile(jsi::Runtime &rt, const string& name, int zoom, int x, int y)
 {
     mapbox::supercluster::Supercluster *supercluster = superclusterMap[name];
-    auto tile = supercluster->getTile(zoom, x, y);
+    auto tiles = supercluster->getTile(zoom, x, y);
 
-    jsi::Array result = jsi::Array(rt, tile.size());
+    jsi::Array result = jsi::Array(rt, tiles.size());
     int i = 0;
-    for (auto &f : tile)
+    for (auto &f : tiles)
     {
-        result.setValueAtIndex(rt, i, featureToJSIObject(rt, f, true));
+        jsi::Object tile = jsi::Object(rt);
+        featureToJSI(rt, tile,f, true);
+        result.setValueAtIndex(rt, i, tile);
         i++;
     }
     return result;
@@ -36,13 +44,15 @@ jsi::Array cluster_getTile(jsi::Runtime &rt, const string& name, int zoom, int x
 
 jsi::Array cluster_getClusters(jsi::Runtime &rt, const string& name, double bbox[4], int zoom){
     mapbox::supercluster::Supercluster *supercluster = superclusterMap[name];
-    auto cluster = supercluster->getClusters(bbox, zoom);
-    jsi::Array result = jsi::Array(rt, cluster.size());
+    auto clusters = supercluster->getClusters(bbox, zoom);
+    jsi::Array result = jsi::Array(rt, clusters.size());
 
     int i = 0;
-    for (auto &f : cluster)
+    for (auto &f : clusters)
     {
-        result.setValueAtIndex(rt, i, clusterFeatureToJSIObject(rt, f));
+        jsi::Object cluster = jsi::Object(rt);
+        clusterToJSI(rt, cluster,f);
+        result.setValueAtIndex(rt, i, cluster);
         i++;
     }
     return result;
@@ -54,10 +64,13 @@ jsi::Array cluster_getChildren( jsi::Runtime &rt, const string& name,int cluster
     mapbox::supercluster::Supercluster *supercluster = superclusterMap[name];
     auto children = supercluster->getChildren(cluster_id);
     jsi::Array result = jsi::Array(rt, children.size());
+
     int i = 0;
     for (auto &f : children)
     {
-        result.setValueAtIndex(rt, i, featureToJSIObject(rt, f, false));
+        jsi::Object child = jsi::Object(rt);
+        featureToJSI(rt, child,f, false);
+        result.setValueAtIndex(rt, i, child);
         i++;
     }
 
@@ -68,12 +81,14 @@ jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string& name, int cluster_i
 {
     mapbox::supercluster::Supercluster *supercluster = superclusterMap[name];
     auto leaves = supercluster->getLeaves(cluster_id, limit, offset);
-
     jsi::Array result = jsi::Array(rt, leaves.size());
+
     int i = 0;
     for (auto &f : leaves)
     {
-        result.setValueAtIndex(rt, i, featureToJSIObject(rt, f, false));
+        jsi::Object leaf = jsi::Object(rt);
+        featureToJSI(rt, leaf,f, false);
+        result.setValueAtIndex(rt, i, leaf);
         i++;
     }
 
@@ -106,15 +121,15 @@ void cluster_cleanup(){
 Helper functions
 
 */
-mapbox::feature::feature_collection<double> parseJSIFeatures(jsi::Runtime &rt, jsi::Value const &value)
+void parseJSIFeatures(jsi::Runtime &rt, mapbox::feature::feature_collection<double> &features, jsi::Value const &jsiFeatures)
 {
-    mapbox::feature::feature_collection<double> features;
-    if (value.asObject(rt).isArray(rt))
+    if (jsiFeatures.asObject(rt).isArray(rt))
     {
-        jsi::Array arr = value.asObject(rt).asArray(rt);
+        jsi::Array arr = jsiFeatures.asObject(rt).asArray(rt);
         for (int i = 0; i < arr.size(rt); i++)
         {
-            mapbox::feature::feature<double> feature = parseJSIFeature(rt, arr.getValueAtIndex(rt, i));
+            mapbox::feature::feature<double> feature;
+            parseJSIFeature(rt, feature, arr.getValueAtIndex(rt, i));
             features.push_back(feature);
         }
     }
@@ -122,15 +137,13 @@ mapbox::feature::feature_collection<double> parseJSIFeatures(jsi::Runtime &rt, j
     {
         jsi::detail::throwJSError(rt, "Expected array of GeoJSON Feature objects");
     }
-    return features;
 };
 
-mapbox::supercluster::Options parseJSIOptions(jsi::Runtime &rt, jsi::Value const &value)
+void parseJSIOptions(jsi::Runtime &rt, mapbox::supercluster::Options &options, jsi::Value const &jsiOptions)
 {
-    mapbox::supercluster::Options options;
-    if (value.isObject())
+    if (jsiOptions.isObject())
     {
-        jsi::Object obj = value.asObject(rt);
+        jsi::Object obj = jsiOptions.asObject(rt);
 
         if (obj.hasProperty(rt, "radius"))
         {
@@ -198,17 +211,14 @@ mapbox::supercluster::Options parseJSIOptions(jsi::Runtime &rt, jsi::Value const
     }
     else
         jsi::detail::throwJSError(rt, "Expected object for options");
-    return options;
 };
 
-mapbox::feature::feature<double> parseJSIFeature(jsi::Runtime &rt, jsi::Value const &f)
+void parseJSIFeature(jsi::Runtime &rt, mapbox::feature::feature<double> &feature, jsi::Value const &jsiFeature)
 {
-    mapbox::feature::feature<double> feature;
-
-    if (!f.isObject())
+    if (!jsiFeature.isObject())
         jsi::detail::throwJSError(rt, "Expected GeoJSON Feature object");
 
-    jsi::Object obj = f.asObject(rt);
+    jsi::Object obj = jsiFeature.asObject(rt);
 
     // obj.type
     if (!obj.hasProperty(rt, "type") || !strcmp(obj.getProperty(rt, "type").asString(rt).utf8(rt).c_str(), "Point"))
@@ -280,15 +290,12 @@ mapbox::feature::feature<double> parseJSIFeature(jsi::Runtime &rt, jsi::Value co
             }
         }
     }
-
-    return feature;
 };
 
-jsi::Object featureToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f, bool geometryAsInt)
+void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f, bool geometryAsInt)
 {
-    jsi::Object result = jsi::Object(rt);
     // .type
-    result.setProperty(rt, "type", 1);
+    jsiObject.setProperty(rt, "type", 1);
 
     // .geometry
     jsi::Array geometryContainer = jsi::Array(rt, 1);
@@ -297,38 +304,37 @@ jsi::Object featureToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double
     geometry.setValueAtIndex(rt, 0, geometryAsInt ? jsi::Value((int)gem.x) : jsi::Value(gem.x));
     geometry.setValueAtIndex(rt, 1, geometryAsInt ? jsi::Value((int)gem.y) : jsi::Value(gem.y));
     geometryContainer.setValueAtIndex(rt, 0, geometry);
-    result.setProperty(rt, "geometry", geometryContainer);
+    jsiObject.setProperty(rt, "geometry", geometryContainer);
 
     // .tags
-    jsi::Object tags = propertiesToJSIObject(rt,f);
-    result.setProperty(rt, "tags", tags);
+    jsi::Object tags = jsi::Object(rt);
+    propertiesToJSI(rt, tags, f);
+    jsiObject.setProperty(rt, "tags", tags);
 
     // .id
     const auto itr = f.properties.find("cluster_id");
     if (itr != f.properties.end() && itr->second.is<uint64_t>())
     {
-        result.setProperty(rt, "id", jsi::Value((int)f.properties["cluster_id"].get<uint64_t>()));
+        jsiObject.setProperty(rt, "id", jsi::Value((int)f.properties["cluster_id"].get<uint64_t>()));
     }
-
-    return result;
 }
 
-jsi::Object clusterFeatureToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f)
+void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f)
 {
-    jsi::Object result = jsi::Object(rt);
     //  .type
-    result.setProperty(rt, "type", jsi::String::createFromUtf8(rt, "Feature"));
+    jsiObject.setProperty(rt, "type", jsi::String::createFromUtf8(rt, "Feature"));
 
     // .id
     const auto itr = f.properties.find("cluster_id");
     if (itr != f.properties.end() && itr->second.is<uint64_t>())
     {
-        result.setProperty(rt, "id", jsi::Value((int)f.properties["cluster_id"].get<uint64_t>()));
+        jsiObject.setProperty(rt, "id", jsi::Value((int)f.properties["cluster_id"].get<uint64_t>()));
     }
 
     // .properties
-    jsi::Object properties = propertiesToJSIObject(rt,f);
-    result.setProperty(rt, "properties", properties);
+    jsi::Object properties = jsi::Object(rt);
+    propertiesToJSI(rt,properties,f);
+    jsiObject.setProperty(rt, "properties", properties);
 
     // .geometry - differs from tile geometry
     jsi::Object geometry = jsi::Object(rt);
@@ -338,38 +344,34 @@ jsi::Object clusterFeatureToJSIObject(jsi::Runtime &rt, mapbox::feature::feature
     coordinates.setValueAtIndex(rt, 1,  jsi::Value(gem.y));
     geometry.setProperty(rt, "type", jsi::String::createFromUtf8(rt, "Point"));
     geometry.setProperty(rt, "coordinates", coordinates);
-    result.setProperty(rt, "geometry", geometry);
-
-    return result;
+    jsiObject.setProperty(rt, "geometry", geometry);
 }
 
-
-jsi::Object propertiesToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f) {
-    jsi::Object result = jsi::Object(rt);
+void propertiesToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f)
+{
     for(auto &itr : f.properties){
             auto name = jsi::String::createFromUtf8(rt, itr.first);
             auto type = itr.second.which();
             if(type == 1){
                 // Boolean
-                result.setProperty(rt, name, jsi::Value(itr.second.get<bool>() == 1));
+                jsiObject.setProperty(rt, name, jsi::Value(itr.second.get<bool>() == 1));
             } else if(type == 2){
                 // Integer
-                result.setProperty(rt, name, jsi::Value((int)itr.second.get<std::uint64_t>()));
+                jsiObject.setProperty(rt, name, jsi::Value((int)itr.second.get<std::uint64_t>()));
             } else if(type == 3){
                 // Double
-                result.setProperty(rt, name, jsi::Value(itr.second.get<double>()));
+                jsiObject.setProperty(rt, name, jsi::Value(itr.second.get<double>()));
             } else if(type == 4){
                 // Double
-                result.setProperty(rt, name, jsi::Value(itr.second.get<double>()));
+                jsiObject.setProperty(rt, name, jsi::Value(itr.second.get<double>()));
             } else if(type == 5){
                 auto value = itr.second.get<std::string>();
                 // null
                 if("null" == value)
-                    result.setProperty(rt, name, jsi::Value(nullptr));
+                    jsiObject.setProperty(rt, name, jsi::Value(nullptr));
                 else
                 // String
-                result.setProperty(rt, name, jsi::String::createFromUtf8(rt,itr.second.get<std::string>()));
+                    jsiObject.setProperty(rt, name, jsi::String::createFromUtf8(rt,itr.second.get<std::string>()));
             }
         }
-    return result;
 }
