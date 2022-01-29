@@ -19,11 +19,11 @@ cd ios && pod install
 ## Usage
 
 ```js
-import Clusterer from 'react-native-clusterer';
+import Supercluster from 'react-native-clusterer';
 
 // ...
 
-const supercluster = new Clusterer(points, options);
+const supercluster = new Supercluster(points, options);
 const clusters = supercluster.getTile(2, 1, 2)
 
 // ...
@@ -42,6 +42,8 @@ useEffect(() => {
 
 Array of [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) objects. Each feature's `geometry` must be a [GeoJSON Point](https://tools.ietf.org/html/rfc7946#section-3.1.2). Once loaded, index is immutable.
 
+Note: Currently supported Point properties are `null`, `boolean`, `number`, `string`. The rest will be discarded whent the supercluster is created.
+
 #### Options
 
 | Option     | Default | Description                                                       |
@@ -57,9 +59,7 @@ Array of [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) obje
 
 #### `getClusters(bbox, zoom)`
 
-TO-DO
-
-<!-- For the given `bbox` array (`[westLng, southLat, eastLng, northLat]`) and integer `zoom`, returns an array of clusters and points as [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) objects. -->
+For the given `bbox` array (`[westLng, southLat, eastLng, northLat]`) and integer `zoom`, returns an array of clusters and points as [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) objects.
 
 #### `getTile(z, x, y)`
 
@@ -86,8 +86,8 @@ Destroys the c++ cluster and frees its memory
 
 - [x] Proper input and return types for methods
 - [x] Implement `getClusters(bbox, zoom)`
+- [x] Parse and return additional Point properties added by users
 - [ ] Find a better implementation for `destroy()`
-- [ ] Parse and return additional Point properties added by users
 - [ ] Map/reduce options
 
 ## Contributing
