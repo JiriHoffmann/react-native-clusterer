@@ -2056,7 +2056,7 @@ namespace mapbox
                     assert(id < zoom.clusters.size());
                     const mapbox::supercluster::Cluster &c = zoom.clusters[id];
 
-                    result.emplace_back(c.num_points ? c.toGeoJSON() : features[c.id]);
+                    result.emplace_back(clusterToGeoJSON(c));
                 };
 
                 zoom.tree.range(lngX(minLng), latY(maxLat), lngX(maxLng), latY(minLat), visitor);
