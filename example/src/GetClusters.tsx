@@ -40,7 +40,7 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
       zoom
     );
     const getTileE = PerformanceNow();
-    console.log(JSON.stringify(clusterRes));
+
     setResult(JSON.stringify(clusterRes));
     setTime([timeDelta(initS, initE), timeDelta(getTileS, getTileE)]);
   };
@@ -58,8 +58,6 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
     const getTileE = PerformanceNow();
 
     supercluster.destroy();
-
-    console.log(JSON.stringify(clusterRes));
 
     setResult(JSON.stringify(clusterRes));
     setTime([timeDelta(initS, initE), timeDelta(getTileS, getTileE)]);
