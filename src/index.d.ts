@@ -135,10 +135,12 @@ declare namespace Supercluster {
  *
  * @param options Optional object containing parameters.
  */
-declare class Supercluster<
+export default class Supercluster<
   P extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps,
   C extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps
 > {
+  private id: number;
+
   constructor(
     points: Array<Supercluster.PointFeature<P>>,
     options?: Supercluster.Options<P, C>
@@ -199,5 +201,3 @@ declare class Supercluster<
    */
   destroy();
 }
-
-export = Supercluster;
