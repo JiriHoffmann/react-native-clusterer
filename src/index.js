@@ -7,21 +7,12 @@ if (module && typeof module.install === 'function') {
 }
 
 // @ts-ignore
-const clusterer = (global as any).clustererModule;
-
-interface SuperclusterOptions {
-  radius?: number;
-  maxZoom?: number;
-  minZoom?: number;
-  extent?: number;
-  minSize?: number;
-  generateId?: boolean;
-}
+const clusterer = global.clustererModule;
 
 export default class Supercluster {
-  private id: string;
+  id;
 
-  constructor(points: any, options?: SuperclusterOptions) {
+  constructor(points, options) {
     if (!clusterer) {
       throw new Error(
         `The package 'react-native-cryptopp' doesn't seem to be linked. Make sure: \n\n` +
@@ -41,28 +32,27 @@ export default class Supercluster {
     clusterer.init(this.id, points, options);
   }
 
-  // TODO: 
-  // getClusters(bbox:any, zoom: number): any {
-  //   return module.getClusters(this.id, bbox, zoom);
-  // }
-
-  getTile(x: number, y: number, z: number): any {
-    return clusterer.getTile(this.id, x, y, z);
+  getClusters(bbox, zoom) {
+    return clusterer.getClusters(this.id, bbox, zoom);
   }
 
-  getChildren(clusterId: string): any {
+  getTile(x, y, z) {
+    return { features: clusterer.getTile(this.id, x, y, z) };
+  }
+
+  getChildren(clusterId) {
     return clusterer.getChildren(this.id, clusterId);
   }
 
-  getLeaves(clusterId: string, limit?: number, offset?: number): any {
+  getLeaves(clusterId, limit, offset) {
     return clusterer.getLeaves(this.id, clusterId, limit ?? 10, offset ?? 0);
   }
 
-  getClusterExpansionZoom(clusterId: string): number {
+  getClusterExpansionZoom(clusterId) {
     return clusterer.getClusterExpansionZoom(this.id, clusterId);
   }
 
-  destroy(): void {
+  destroy() {
     clusterer.destroyCluster(this.id);
   }
 }

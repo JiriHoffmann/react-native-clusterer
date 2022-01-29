@@ -7,21 +7,21 @@
 using namespace std;
 using namespace facebook;
 
-map<string, mapbox::supercluster::Supercluster *> clusterMap = map<string, mapbox::supercluster::Supercluster *>();
+map<string, mapbox::supercluster::Supercluster *> superclusterMap = map<string, mapbox::supercluster::Supercluster *>();
 
 void cluster_init(jsi::Runtime &rt, jsi::Value const &nVal, jsi::Value const &fVal, jsi::Value const &oVal)
 {
     auto name = nVal.asString(rt).utf8(rt);
     auto features = parseJSIFeatures(rt, fVal);
     auto options = parseJSIOptions(rt, oVal);
-    auto *cluster = new mapbox::supercluster::Supercluster(features, options);
-    clusterMap[name] = cluster;
+    auto *supercluster = new mapbox::supercluster::Supercluster(features, options);
+    superclusterMap[name] = supercluster;
 }
 
 jsi::Array cluster_getTile(jsi::Runtime &rt, const string& name, int zoom, int x, int y)
 {
-    mapbox::supercluster::Supercluster *cluster = clusterMap[name];
-    auto tile = cluster->getTile(zoom, x, y);
+    mapbox::supercluster::Supercluster *supercluster = superclusterMap[name];
+    auto tile = supercluster->getTile(zoom, x, y);
 
     jsi::Array result = jsi::Array(rt, tile.size());
     int i = 0;
@@ -33,10 +33,25 @@ jsi::Array cluster_getTile(jsi::Runtime &rt, const string& name, int zoom, int x
     return result;
 }
 
+jsi::Array cluster_getClusters(jsi::Runtime &rt, const string& name, double bbox[4], int zoom){
+    mapbox::supercluster::Supercluster *supercluster = superclusterMap[name];
+    auto cluster = supercluster->getClusters(bbox, zoom);
+    jsi::Array result = jsi::Array(rt, cluster.size());
+
+    int i = 0;
+    for (auto &f : cluster)
+    {
+        result.setValueAtIndex(rt, i, clusterFeatureToJSIObject(rt, f));
+        i++;
+    }
+    return result;
+};
+
+
 jsi::Array cluster_getChildren( jsi::Runtime &rt, const string& name,int cluster_id)
 {
-    mapbox::supercluster::Supercluster *cluster = clusterMap[name];
-    auto children = cluster->getChildren(cluster_id);
+    mapbox::supercluster::Supercluster *supercluster = superclusterMap[name];
+    auto children = supercluster->getChildren(cluster_id);
     jsi::Array result = jsi::Array(rt, children.size());
     int i = 0;
     for (auto &f : children)
@@ -50,8 +65,8 @@ jsi::Array cluster_getChildren( jsi::Runtime &rt, const string& name,int cluster
 
 jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string& name, int cluster_id, int limit, int offset)
 {
-    mapbox::supercluster::Supercluster *cluster = clusterMap[name];
-    auto leaves = cluster->getLeaves(cluster_id, limit, offset);
+    mapbox::supercluster::Supercluster *supercluster = superclusterMap[name];
+    auto leaves = supercluster->getLeaves(cluster_id, limit, offset);
 
     jsi::Array result = jsi::Array(rt, leaves.size());
     int i = 0;
@@ -66,22 +81,22 @@ jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string& name, int cluster_i
 
 int cluster_getClusterExpansionZoom(const string& name, int cluster_id)
 {
-    mapbox::supercluster::Supercluster *cluster = clusterMap[name];
-    return (int)cluster->getClusterExpansionZoom(cluster_id);
+    mapbox::supercluster::Supercluster *supercluster = superclusterMap[name];
+    return (int)supercluster->getClusterExpansionZoom(cluster_id);
 }
 
 
 void cluster_destroyCluster(const string& name){
-    mapbox::supercluster::Supercluster *cluster = clusterMap[name];
-    delete cluster;
-    clusterMap.erase(name);
+    mapbox::supercluster::Supercluster *supercluster = superclusterMap[name];
+    delete supercluster;
+    superclusterMap.erase(name);
 }
 
 void cluster_cleanup(){
-    for (const auto& cluster : clusterMap) {
-        delete cluster.second;
+    for (const auto& supercluster : superclusterMap) {
+        delete supercluster.second;
     }
-    clusterMap.clear();
+    superclusterMap.clear();
 }
 
 
@@ -259,12 +274,45 @@ jsi::Object featureToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double
         tags.setProperty(rt, "point_count", jsi::Value(point_count));
         tags.setProperty(rt, "point_count_abbreviated", jsi::String::createFromUtf8(rt, pc_abbreviated));
     }
-    else
-    {
-        // TODO: pass tags from points
-    }
+
     result.setProperty(rt, "geometry", geometryContainer);
     result.setProperty(rt, "tags", tags);
+
+    return result;
+}
+
+jsi::Object clusterFeatureToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f)
+{
+    jsi::Object result = jsi::Object(rt);
+    result.setProperty(rt, "type", jsi::String::createFromUtf8(rt, "Feature"));
+
+    jsi::Object geometry = jsi::Object(rt);
+    jsi::Array coordinates = jsi::Array(rt, 2);
+    auto gem = f.geometry.get<mapbox::geometry::point<double>>();
+    coordinates.setValueAtIndex(rt, 0, jsi::Value(gem.x));
+    coordinates.setValueAtIndex(rt, 1,  jsi::Value(gem.y));
+    geometry.setProperty(rt, "type", jsi::String::createFromUtf8(rt, "Point"));
+    geometry.setProperty(rt, "coordinates", coordinates);
+
+    jsi::Object properties = jsi::Object(rt);
+
+    const auto itr = f.properties.find("cluster");
+    if (itr != f.properties.end() && itr->second.get<bool>())
+    {
+        double cluster_id = f.properties["cluster_id"].get<uint64_t>();
+        double point_count = f.properties["point_count"].get<uint64_t>();
+        auto pc_abbreviated = f.properties["point_count_abbreviated"].get<string>();
+
+        properties.setProperty(rt, "cluster", true);
+        properties.setProperty(rt, "cluster_id", jsi::Value(cluster_id));
+        result.setProperty(rt, "id", jsi::Value(cluster_id));
+
+        properties.setProperty(rt, "point_count", jsi::Value(point_count));
+        properties.setProperty(rt, "point_count_abbreviated", jsi::String::createFromUtf8(rt, pc_abbreviated));
+    }
+
+    result.setProperty(rt, "properties", properties);
+    result.setProperty(rt, "geometry", geometry);
 
     return result;
 }

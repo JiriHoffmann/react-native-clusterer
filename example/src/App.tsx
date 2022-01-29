@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { useState } from 'react';
 import {
@@ -7,33 +8,81 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
-import SuperclusterJS from './superclusterjs';
-import SuperclusterCPP from './superclustercpp';
+import { TextInput } from 'react-native';
+import { getRandomData, parsedPlacesData } from './places';
+import { GetTile } from './GetTile';
+import { GetClusters } from './GetClusters';
+
+const DEFAULT_SIZE = 1000;
 
 export default function App() {
-  const [showMap, setShowMap] = useState<null | 'js' | 'cpp'>(null);
+  const [data, setData] = useState<any[]>(getRandomData(DEFAULT_SIZE));
+  const [dataSizeInput, setDataSizeInput] = useState(DEFAULT_SIZE);
+  const [showType, setType] = useState<null | 'tile' | 'cluster'>(null);
+
+  const _handleDefaultDataPress = () => {
+    setData(parsedPlacesData.features);
+  };
+
+  const _handleGenerateDataPress = () => {
+    setData(getRandomData(dataSizeInput));
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        {showMap === 'js' && <SuperclusterJS />}
-        {showMap === 'cpp' && <SuperclusterCPP />}
+      <Text style={styles.header}>Supercluster comparison</Text>
+      <Text style={styles.h2}>Input Data</Text>
+
+      <TouchableOpacity
+        style={styles.defaultDataButton}
+        onPress={_handleDefaultDataPress}
+      >
+        <Text>Use supercluster.js test data</Text>
+      </TouchableOpacity>
+      <Text style={styles.h2}>Or generate random points</Text>
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={{ ...styles.input, marginRight: 10 }}
+          placeholder="Enter data size here"
+          onChangeText={(t) => setDataSizeInput(t as any)}
+          keyboardType={'number-pad'}
+          value={`${dataSizeInput}`}
+          multiline={false}
+        />
+        <TouchableOpacity
+          style={styles.button}
+          onPress={_handleGenerateDataPress}
+        >
+          <Text>Generate</Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.h2}>Data size: {data.length}</Text>
+      <View style={styles.inputContainer}>
+        <TouchableOpacity
+          style={{
+            ...styles.type,
+            borderColor: '#9c8eed',
+            marginRight: 10,
+            backgroundColor: showType === 'tile' ? '#9c8eed' : '#9c8eed50',
+          }}
+          onPress={() => setType('tile')}
+        >
+          <Text>getTile</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            ...styles.type,
+            borderColor: '#eda78e',
+            backgroundColor: showType === 'cluster' ? '#eda78e' : '#eda78e50',
+          }}
+          onPress={() => setType('cluster')}
+        >
+          <Text>getClusters</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => setShowMap('js')}
-        >
-          <Text>JS Impementation</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => setShowMap('cpp')}
-        >
-          <Text>C++ Impementation</Text>
-        </TouchableOpacity>
-      </View>
+      {showType === 'tile' && <GetTile data={data} />}
+      {showType === 'cluster' && <GetClusters data={data} />}
     </SafeAreaView>
   );
 }
@@ -41,10 +90,19 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    margin: 20,
   },
   content: {
     flex: 1,
-    padding: 20,
+  },
+  header: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  h2: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   buttonContainer: {
     position: 'absolute',
@@ -55,13 +113,40 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     width: '100%',
   },
-  button: {
-    flex: 1,
-    marginHorizontal: 10,
+  defaultDataButton: {
+    marginVertical: 5,
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
     height: 40,
     backgroundColor: '#8eb3ed',
+  },
+  button: {
+    flex: 1,
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 40,
+    backgroundColor: '#8eb3ed',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: '#8eb3ed',
+    height: 40,
+  },
+  type: {
+    flex: 1,
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 40,
+    borderWidth: 2,
+    marginTop: 20,
   },
 });

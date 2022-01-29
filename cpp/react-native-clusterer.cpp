@@ -45,6 +45,34 @@ namespace clusterer
 				return  cluster_getTile(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber());
 				});
 
+		auto getClusters = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getClusters"), 3, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
+															 {
+				if (count != 3)
+				{
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getClusters expects 2 arguments");
+					return jsi::Value();
+				}
+
+				if (!args[0].isString() || !args[1].asObject(rt).isArray(rt) || !args[2].isNumber())
+				{
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getClusters expects an array and a number");
+					return jsi::Value();
+				}
+				try {
+					auto jsibbox = args[1].asObject(rt).asArray(rt);
+					double bbox[4] = {
+							jsibbox.getValueAtIndex(rt, 0).asNumber(),
+							jsibbox.getValueAtIndex(rt, 1).asNumber(),
+							jsibbox.getValueAtIndex(rt, 2).asNumber(),
+							jsibbox.getValueAtIndex(rt, 3).asNumber(),
+					};
+					return  cluster_getClusters(rt, args[0].asString(rt).utf8(rt), bbox, (int)args[2].asNumber());
+				} catch (const std::exception& e) {
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: GetClusters error, make sure boundingBox is an array of 4 numbers");
+                    return jsi::Value();
+				}});
+
+
 		auto getChildren = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getChildren"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																 {
 				if (count != 2)
@@ -103,6 +131,7 @@ namespace clusterer
 		jsi::Object module = jsi::Object(jsiRuntime);
 		module.setProperty(jsiRuntime, "init", move(init));
 		module.setProperty(jsiRuntime, "getTile", move(getTile));
+		module.setProperty(jsiRuntime, "getClusters", move(getClusters));
 		module.setProperty(jsiRuntime, "getChildren", move(getChildren));
 		module.setProperty(jsiRuntime, "getLeaves", move(getLeaves));
 		module.setProperty(jsiRuntime, "getClusterExpansionZoom", move(getClusterExpansionZoom));
