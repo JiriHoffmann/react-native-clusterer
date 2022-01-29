@@ -41,4 +41,6 @@ jsi::Object featureToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double
 
 jsi::Object clusterFeatureToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f);
 
+jsi::Object propertiesToJSIObject(jsi::Runtime &rt, mapbox::feature::feature<double> &f);
+
 #endif // CLUSTERER_H
