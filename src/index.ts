@@ -21,7 +21,7 @@ export default class SuperclusterClass<
   ) {
     if (!clusterer) {
       throw new Error(
-        `The package 'react-native-cryptopp' doesn't seem to be linked. Make sure: \n\n` +
+        `The package 'react-native-clusterer' doesn't seem to be linked. Make sure: \n\n` +
           Platform.select({
             ios: "- You have run 'pod install'\n",
             default: '',
