@@ -34,7 +34,12 @@
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "cluster",
+    "clusters",
+    "clustering",
+    "clustering-algorithm",
+    "supercluster"
   ],
   "repository": "https://github.com/JiriHoffmann/react-native-clusterer",
   "author": "Jiri Hoffmann <hoffmaji@mail.gvsu.edu> (https://github.com/JiriHoffmann)",
