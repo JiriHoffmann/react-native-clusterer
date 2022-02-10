@@ -34,7 +34,7 @@ jsi::Array cluster_getTile(jsi::Runtime &rt, const string& name, int zoom, int x
     for (auto &f : tiles)
     {
         jsi::Object tile = jsi::Object(rt);
-        featureToJSI(rt, tile,f, true);
+        featureToJSI(rt, tile,f);
         result.setValueAtIndex(rt, i, tile);
         i++;
     }
@@ -68,7 +68,7 @@ jsi::Array cluster_getChildren( jsi::Runtime &rt, const string& name,int cluster
     for (auto &f : children)
     {
         jsi::Object child = jsi::Object(rt);
-        featureToJSI(rt, child,f, false);
+        featureToJSI(rt, child,f);
         result.setValueAtIndex(rt, i, child);
         i++;
     }
@@ -86,7 +86,7 @@ jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string& name, int cluster_i
     for (auto &f : leaves)
     {
         jsi::Object leaf = jsi::Object(rt);
-        featureToJSI(rt, leaf,f, false);
+        featureToJSI(rt, leaf,f);
         result.setValueAtIndex(rt, i, leaf);
         i++;
     }
@@ -291,7 +291,7 @@ void parseJSIFeature(jsi::Runtime &rt, mapbox::feature::feature<double> &feature
     }
 };
 
-void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f, bool geometryAsInt)
+void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f)
 {
     // .type
     jsiObject.setProperty(rt, "type", 1);
@@ -300,8 +300,8 @@ void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::fea
     jsi::Array geometryContainer = jsi::Array(rt, 1);
     jsi::Array geometry = jsi::Array(rt, 2);
     auto gem = f.geometry.get<mapbox::geometry::point<double>>();
-    geometry.setValueAtIndex(rt, 0, geometryAsInt ? jsi::Value((int)gem.x) : jsi::Value(gem.x));
-    geometry.setValueAtIndex(rt, 1, geometryAsInt ? jsi::Value((int)gem.y) : jsi::Value(gem.y));
+    geometry.setValueAtIndex(rt, 0, jsi::Value(gem.x));
+    geometry.setValueAtIndex(rt, 1, jsi::Value(gem.y));
     geometryContainer.setValueAtIndex(rt, 0, geometry);
     jsiObject.setProperty(rt, "geometry", geometryContainer);
 
@@ -317,6 +317,35 @@ void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::fea
         jsiObject.setProperty(rt, "id", jsi::Value((int)f.properties["cluster_id"].get<uint64_t>()));
     }
 }
+
+// same as featureToJSI with &f as double except geometry is int
+void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<std::int16_t> &f)
+{
+    // .type
+    jsiObject.setProperty(rt, "type", 1);
+
+    // .geometry
+    jsi::Array geometryContainer = jsi::Array(rt, 1);
+    jsi::Array geometry = jsi::Array(rt, 2);
+    auto gem = f.geometry.get<mapbox::geometry::point<std::int16_t>>();
+    geometry.setValueAtIndex(rt, 0, jsi::Value((int)gem.x));
+    geometry.setValueAtIndex(rt, 1, jsi::Value((int)gem.y));
+    geometryContainer.setValueAtIndex(rt, 0, geometry);
+    jsiObject.setProperty(rt, "geometry", geometryContainer);
+
+    // .tags
+    jsi::Object tags = jsi::Object(rt);
+    propertiesToJSI(rt, tags, f);
+    jsiObject.setProperty(rt, "tags", tags);
+
+    // .id
+    const auto itr = f.properties.find("cluster_id");
+    if (itr != f.properties.end() && itr->second.is<uint64_t>())
+    {
+        jsiObject.setProperty(rt, "id", jsi::Value((int)f.properties["cluster_id"].get<uint64_t>()));
+    }
+}
+
 
 void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f)
 {
@@ -347,6 +376,36 @@ void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::fea
 }
 
 void propertiesToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f)
+{
+    for(auto &itr : f.properties){
+            auto name = jsi::String::createFromUtf8(rt, itr.first);
+            auto type = itr.second.which();
+            if(type == 1){
+                // Boolean
+                jsiObject.setProperty(rt, name, jsi::Value(itr.second.get<bool>() == 1));
+            } else if(type == 2){
+                // Integer
+                jsiObject.setProperty(rt, name, jsi::Value((int)itr.second.get<std::uint64_t>()));
+            } else if(type == 3){
+                // Double
+                jsiObject.setProperty(rt, name, jsi::Value(itr.second.get<double>()));
+            } else if(type == 4){
+                // Double
+                jsiObject.setProperty(rt, name, jsi::Value(itr.second.get<double>()));
+            } else if(type == 5){
+                auto value = itr.second.get<std::string>();
+                // null
+                if("null" == value)
+                    jsiObject.setProperty(rt, name, jsi::Value(nullptr));
+                else
+                // String
+                    jsiObject.setProperty(rt, name, jsi::String::createFromUtf8(rt,itr.second.get<std::string>()));
+            }
+        }
+}
+
+// exactly same as propertiesToJSI with &f as double
+void propertiesToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<std::int16_t> &f)
 {
     for(auto &itr : f.properties){
             auto name = jsi::String::createFromUtf8(rt, itr.first);

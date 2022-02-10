@@ -37,10 +37,14 @@ void parseJSIOptions(jsi::Runtime &rt, mapbox::supercluster::Options &options, j
 
 void parseJSIFeature(jsi::Runtime &rt, mapbox::feature::feature<double> &feature, jsi::Value const &jsiFeature);
 
-void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f, bool geometryAsInt);
+void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f);
+
+void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<std::int16_t> &f);
 
 void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f);
 
 void propertiesToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f);
+
+void propertiesToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<std::int16_t> &f);
 
 #endif // CLUSTERER_H

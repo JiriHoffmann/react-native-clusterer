@@ -1942,9 +1942,9 @@ namespace mapbox
             using GeoJSONFeature = mapbox::feature::feature<double>;
             using GeoJSONFeatures = feature_collection<double>;
 
-            using TilePoint = point<double>;
-            using TileFeature = mapbox::feature::feature<double>;
-            using TileFeatures = feature_collection<double>;
+            using TilePoint = point<std::int16_t>;
+            using TileFeature = mapbox::feature::feature<std::int16_t>;
+            using TileFeatures = feature_collection<std::int16_t>;
 
         public:
             const GeoJSONFeatures features;
