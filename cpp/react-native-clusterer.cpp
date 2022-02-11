@@ -1,13 +1,7 @@
-#include <jsi/jsi.h>
 #include "react-native-clusterer.h"
-#include "clusterer.h"
-
-using namespace facebook;
-using namespace std;
 
 namespace clusterer
 {
-
 	void install(jsi::Runtime &jsiRuntime)
 	{
 		auto init = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "init"), 2, [](jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args, size_t count) -> jsi::Value
@@ -25,8 +19,7 @@ namespace clusterer
 				}
 
 				cluster_init(rt, args[0], args[1], args[2]);
-				return jsi::Value();
-				});
+				return jsi::Value(); });
 
 		auto getTile = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getTile"), 4, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 															 {
@@ -42,11 +35,10 @@ namespace clusterer
 					return jsi::Value();
 				}
 
-				return  cluster_getTile(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber());
-				});
+				return  cluster_getTile(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
 
 		auto getClusters = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getClusters"), 3, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
-															 {
+																 {
 				if (count != 3)
 				{
 					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getClusters expects 2 arguments");
@@ -70,8 +62,7 @@ namespace clusterer
 				} catch (const std::exception& e) {
 					jsi::detail::throwJSError(rt, "React-Native-Clusterer: GetClusters error, make sure boundingBox is an array of 4 numbers");
                     return jsi::Value();
-				}});
-
+				} });
 
 		auto getChildren = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getChildren"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																 {
@@ -87,8 +78,7 @@ namespace clusterer
 					return jsi::Value();
 				}
 
-				return cluster_getChildren(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber());
-				});
+				return cluster_getChildren(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber()); });
 
 		auto getLeaves = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getLeaves"), 4, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 															   {
@@ -103,8 +93,7 @@ namespace clusterer
 					return jsi::Value();
 				}
 
-				return cluster_getLeaves(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber());
-				});
+				return cluster_getLeaves(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
 
 		auto getClusterExpansionZoom = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getClusterExpansionZoom"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																			 {
@@ -119,14 +108,12 @@ namespace clusterer
 					 return jsi::Value();
 				}
 
-				return cluster_getClusterExpansionZoom(args[0].asString(rt).utf8(rt), (int)args[1].asNumber());
-				});
+				return cluster_getClusterExpansionZoom(args[0].asString(rt).utf8(rt), (int)args[1].asNumber()); });
 
 		auto destroyCluster = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "destroyCluster"), 1, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
-																			 {
+																	{
 				cluster_destroyCluster(args[0].asString(rt).utf8(rt));
-				return jsi::Value();
-				});
+				return jsi::Value(); });
 
 		jsi::Object module = jsi::Object(jsiRuntime);
 		module.setProperty(jsiRuntime, "init", move(init));
@@ -140,7 +127,8 @@ namespace clusterer
 		jsiRuntime.global().setProperty(jsiRuntime, "clustererModule", move(module));
 	}
 
-	void cleanup() {
+	void cleanup()
+	{
 		cluster_cleanup();
 	}
 }

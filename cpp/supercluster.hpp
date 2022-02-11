@@ -2027,7 +2027,8 @@ namespace mapbox
                 return result;
             }
 
-            GeoJSONFeatures getClusters(double bbox[4], std::uint8_t zoomArg) {
+            GeoJSONFeatures getClusters(double bbox[4], std::uint8_t zoomArg)
+            {
                 GeoJSONFeatures result;
 
                 double minLng = std::fmod(std::fmod((bbox[0] + 180.0), 360.0) + 360.0, 360) - 180;
@@ -2035,12 +2036,15 @@ namespace mapbox
                 double maxLng = bbox[2] == 180 ? 180 : std::fmod(std::fmod(bbox[2] + 180.0, 360.0) + 360.0, 360) - 180;
                 const double maxLat = std::max(-90.0, std::min(90.0, bbox[3]));
 
-                if (bbox[2] - bbox[0] >= 360) {
+                if (bbox[2] - bbox[0] >= 360)
+                {
                     minLng = -180;
                     maxLng = 180;
-                } else if (minLng > maxLng) {
-                    double eastBbox[4] = { minLng, minLat, 180, maxLat };
-                    double westBbox[4] = { -180, minLat, maxLng, maxLat };
+                }
+                else if (minLng > maxLng)
+                {
+                    double eastBbox[4] = {minLng, minLat, 180, maxLat};
+                    double westBbox[4] = {-180, minLat, maxLng, maxLat};
                     const GeoJSONFeatures easternHem = getClusters(eastBbox, zoomArg);
                     const GeoJSONFeatures westernHem = getClusters(westBbox, zoomArg);
                     result.insert(result.end(), easternHem.begin(), easternHem.end());
@@ -2052,7 +2056,8 @@ namespace mapbox
                 assert(zoom_iter != zooms.end());
                 const auto &zoom = zoom_iter->second;
 
-                const auto visitor = [&, this](const auto &id) {
+                const auto visitor = [&, this](const auto &id)
+                {
                     assert(id < zoom.clusters.size());
                     const mapbox::supercluster::Cluster &c = zoom.clusters[id];
 
@@ -2063,7 +2068,6 @@ namespace mapbox
 
                 return result;
             }
-
 
             GeoJSONFeatures getChildren(const std::uint32_t cluster_id) const
             {
@@ -2310,20 +2314,23 @@ namespace mapbox
                 return c.num_points == 1 ? features[c.id] : c.toGeoJSON();
             }
 
-            static double lngX(double lng) {
+            static double lngX(double lng)
+            {
                 return lng / 360 + 0.5;
             }
 
-            static double latY(double lat) {
+            static double latY(double lat)
+            {
                 const double sine = std::sin(lat * M_PI / 180);
                 const double y = 0.5 - 0.25 * std::log((1 + sine) / (1 - sine)) / M_PI;
                 return std::min(std::max(y, 0.0), 1.0);
             }
 
-            static point<double> project(const GeoJSONPoint &p) {
+            static point<double> project(const GeoJSONPoint &p)
+            {
                 const auto x = lngX(p.x);
                 const auto y = latY(p.y);
-                return { x, y };
+                return {x, y};
             }
         };
 

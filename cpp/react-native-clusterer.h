@@ -4,10 +4,15 @@
 #include <jsi/jsilib.h>
 #include <jsi/jsi.h>
 
+#include "clusterer.h"
+
+using namespace facebook;
+using namespace std;
+
 namespace clusterer
 {
 
-  void install(facebook::jsi::Runtime &jsiRuntime);
+  void install(jsi::Runtime &jsiRuntime);
   void cleanup();
 }
 
