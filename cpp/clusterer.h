@@ -30,6 +30,7 @@ void cluster_cleanup();
 Helper functions
 
 */
+mapbox::supercluster::Supercluster* getSuperclusterFromMap(const string &name);
 
 void parseJSIFeatures(jsi::Runtime &rt, mapbox::feature::feature_collection<double> &features, jsi::Value const &jsiFeatures);
 
