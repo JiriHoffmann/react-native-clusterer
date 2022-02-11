@@ -57,9 +57,6 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
     );
     const getTileE = PerformanceNow();
 
-    console.log(supercluster.getChildren(2))
-    console.log(supercluster.getLeaves(2,10,0))
-
     supercluster.destroy();
 
     setResult(JSON.stringify(clusterRes));
