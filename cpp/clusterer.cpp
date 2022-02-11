@@ -61,7 +61,7 @@ jsi::Array cluster_getChildren(jsi::Runtime &rt, const string &name, int cluster
     for (auto &f : children)
     {
         jsi::Object child = jsi::Object(rt);
-        featureToJSI(rt, child, f);
+        clusterToJSI(rt, child, f);
         result.setValueAtIndex(rt, i, child);
         i++;
     }
@@ -79,7 +79,7 @@ jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string &name, int cluster_i
     for (auto &f : leaves)
     {
         jsi::Object leaf = jsi::Object(rt);
-        featureToJSI(rt, leaf, f);
+        clusterToJSI(rt, leaf, f);
         result.setValueAtIndex(rt, i, leaf);
         i++;
     }
