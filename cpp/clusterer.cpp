@@ -325,34 +325,6 @@ void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::fea
     jsiObject.setProperty(rt, "geometry", geometry);
 }
 
-void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<double> &f)
-{
-    // .type
-    jsiObject.setProperty(rt, "type", 1);
-
-    // .geometry
-    jsi::Array geometryContainer = jsi::Array(rt, 1);
-    jsi::Array geometry = jsi::Array(rt, 2);
-    auto gem = f.geometry.get<mapbox::geometry::point<double>>();
-    geometry.setValueAtIndex(rt, 0, jsi::Value(gem.x));
-    geometry.setValueAtIndex(rt, 1, jsi::Value(gem.y));
-    geometryContainer.setValueAtIndex(rt, 0, geometry);
-    jsiObject.setProperty(rt, "geometry", geometryContainer);
-
-    // .tags
-    jsi::Object tags = jsi::Object(rt);
-    propertiesToJSI(rt, tags, f);
-    jsiObject.setProperty(rt, "tags", tags);
-
-    // .id
-    const auto itr = f.properties.find("cluster_id");
-    if (itr != f.properties.end() && itr->second.is<uint64_t>())
-    {
-        jsiObject.setProperty(rt, "id", jsi::Value((int)f.properties["cluster_id"].get<uint64_t>()));
-    }
-}
-
-// same as featureToJSI with &f as double except geometry is int
 void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject, mapbox::feature::feature<std::int16_t> &f)
 {
     // .type
