@@ -68,13 +68,13 @@ namespace clusterer
 																 {
 				if (count != 2)
 				{
-					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getTile expects 2 arguments");
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getChildren expects 2 arguments");
 					return jsi::Value();
 				}
 
 				if (!args[0].isString() || !args[1].isNumber() )
 				{
-					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getTile expects string and a number as arguments");
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getChildren expects string and a number as arguments");
 					return jsi::Value();
 				}
 
@@ -89,7 +89,7 @@ namespace clusterer
 				}
 					if (!args[0].isString() || !args[1].isNumber() || !args[2].isNumber() || !args[3].isNumber())
 				{
-					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getTile expects 3 numbers as arguments");
+					jsi::detail::throwJSError(rt, "React-Native-Clusterer: getLeaves expects 3 numbers as arguments");
 					return jsi::Value();
 				}
 
