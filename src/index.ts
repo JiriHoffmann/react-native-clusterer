@@ -3,7 +3,7 @@ import type Supercluster from './types';
 
 const module = NativeModules.Clusterer;
 
-if (module && typeof module.install === 'function') {
+if (module && typeof module.install === 'function' && !(global as any).clustererModule) {
   module.install();
 }
 

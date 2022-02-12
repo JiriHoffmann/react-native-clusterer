@@ -1,5 +1,8 @@
 import java.nio.file.Paths
 
+// build.gradle based on:
+// https://github.com/ammarahm-ed/react-native-jsi-template
+
 buildscript {
   // Buildscript is evaluated before everything else so we can't use getExtOrDefault
   repositories {
@@ -23,30 +26,36 @@ def getExtOrIntegerDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties['RNClusterer_' + name]).toInteger()
 }
 
-static def findNodeModules(baseDir) {
-  def basePath = baseDir.toPath().normalize()
+def found = false
+def reactNativeDir = null
+def androidSourcesName = 'React Native sources'
+def parentDir = rootProject.projectDir
 
-  // Find node_modules inside the example project
-  def exampleNodeModules = Paths.get(basePath.getParent().toString(), "example/node_modules")
-  if(exampleNodeModules.toFile().exists()) {
-    return exampleNodeModules.toString().replace("\\", "/")
-  }
-
-  // Node's module resolution algorithm searches up to the root directory,
-  // after which the base path will be null
-  while (basePath) {
-    def nodeModulesPath = Paths.get(basePath.toString(), "node_modules")
-    def reactNativePath = Paths.get(nodeModulesPath.toString(), "react-native")
-    if (nodeModulesPath.toFile().exists() && reactNativePath.toFile().exists()) {
-      return nodeModulesPath.toString().replace("\\", "/")
-    }
-    basePath = basePath.getParent()
-  }
-  throw new GradleException("react-native-clusterer: Failed to find node_modules/ path!")
+if (rootProject.ext.has('reactNativeAndroidRoot')) {
+  reactNativeDir = rootProject.ext.get('reactNativeAndroidRoot')
+} else {
+  reactNativeDir = new File(
+          projectDir,
+          '/../../../node_modules/react-native/android'
+  )
 }
+if (reactNativeDir.exists()) {
+  found = true
+} else {
+  1.upto(5, {
+    if (found) return true
+    parentDir = reactNativeDir.parentFile
 
-def nodeModules = findNodeModules(projectDir);
-logger.warn("react-native-clusterer: node_modules/ found at: ${nodeModules}");
+    reactNativeDir = new File(
+            parentDir,
+            'node_modules/react-native/android'
+    )
+
+    if (reactNativeDir.exists()) {
+      found = true
+    }
+  })
+}
 
 android {
   compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
@@ -61,9 +70,9 @@ android {
 
     externalNativeBuild {
         cmake {
-            cppFlags "-O2 -frtti -fexceptions -Wall -fstack-protector-all"
+            cppFlags "-O2 -frtti -fexceptions -Wall -fstack-protector-all", "-DONANDROID"
             abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
-            arguments "-DNODE_MODULES_DIR=${nodeModules}"
+            arguments  "-DANDROID_STL=c++_shared", "-DNODE_MODULES_DIR=${reactNativeDir.parentFile.parentFile.toString()}"
         }
     }
 
@@ -75,17 +84,20 @@ android {
       }
   }
 
-  buildTypes {
-    release {
-      minifyEnabled false
-    }
-  }
   lintOptions {
     disable 'GradleCompatible'
   }
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
+  }
+
+  packagingOptions {
+    excludes = ["**/libc++_shared.so","**/libjsi.so","**/libreactnativejni.so","META-INF/MANIFEST.MF"]
+  }
+
+  configurations {
+    extractJNI
   }
 }
 
@@ -94,59 +106,12 @@ repositories {
   jcenter()
   google()
 
-  def found = false
-  def defaultDir = null
-  def androidSourcesName = 'React Native sources'
-
-  if (rootProject.ext.has('reactNativeAndroidRoot')) {
-    defaultDir = rootProject.ext.get('reactNativeAndroidRoot')
-  } else {
-    defaultDir = file("$nodeModules/react-native/android")
-  }
-
-  if (defaultDir.exists()) {
+  if (reactNativeDir.exists()) {
     maven {
-      url defaultDir.toString()
+      url reactNativeDir.toString()
       name androidSourcesName
     }
-
-    logger.info(":${project.name}:reactNativeAndroidRoot ${defaultDir.canonicalPath}")
-    found = true
-  } else {
-    def parentDir = rootProject.projectDir
-
-    1.upto(5, {
-      if (found) return true
-      parentDir = parentDir.parentFile
-
-      def androidSourcesDir = new File(
-              parentDir,
-              'node_modules/react-native'
-      )
-
-      def androidPrebuiltBinaryDir = new File(
-              parentDir,
-              'node_modules/react-native/android'
-      )
-
-      if (androidPrebuiltBinaryDir.exists()) {
-        maven {
-          url androidPrebuiltBinaryDir.toString()
-          name androidSourcesName
-        }
-
-        logger.info(":${project.name}:reactNativeAndroidRoot ${androidPrebuiltBinaryDir.canonicalPath}")
-        found = true
-      } else if (androidSourcesDir.exists()) {
-        maven {
-          url androidSourcesDir.toString()
-          name androidSourcesName
-        }
-
-        logger.info(":${project.name}:reactNativeAndroidRoot ${androidSourcesDir.canonicalPath}")
-        found = true
-      }
-    })
+    logger.info(":${project.name}:reactNativeAndroidRoot ${reactNativeDir.canonicalPath}")
   }
 
   if (!found) {
@@ -158,6 +123,50 @@ repositories {
 }
 
 dependencies {
-  // noinspection GradleDynamicVersion
-  api 'com.facebook.react:react-native:+'
+  //noinspection GradleDynamicVersion
+  implementation 'com.facebook.react:react-native:+'
+
+  def rnAAR = fileTree(reactNativeDir.toString()).matching({ it.include "**/**/*.aar" }).singleFile
+  extractJNI(files(rnAAR))
+}
+
+task extractJNIFiles {
+
+  doLast {
+    configurations.extractJNI.files.each {
+      def file = it.absoluteFile
+
+      copy {
+        from zipTree(file)
+        into "$buildDir/$file.name"
+        include "jni/**/*"
+      }
+    }
+  }
+}
+
+task extractJNIFilesForRelease {
+
+  doLast {
+    configurations.extractJNI.files.each {
+      def file = it.absoluteFile
+
+      copy {
+        from zipTree(file)
+        into "$buildDir/$file.name"
+        include "jni/**/*"
+      }
+    }
+  }
+}
+
+
+tasks.whenTaskAdded { task ->
+  if (task.name.contains('generateJsonModelDebug') || task.name.contains('externalNativeBuild')) {
+    task.dependsOn(extractJNIFiles);
+  }
+  // workaround for builds failing in various ci
+  if (task.name.contains('generateJsonModelRelease')) {
+    task.dependsOn(extractJNIFilesForRelease)
+  }
 }

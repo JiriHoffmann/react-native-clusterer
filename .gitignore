@@ -64,3 +64,5 @@ android/keystores/debug.keystore
 lib/
 
 supercluster/
+example/yarn.lock
+example/ios/Podfile.lock
