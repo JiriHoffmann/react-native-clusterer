@@ -1,8 +1,5 @@
 import java.nio.file.Paths
 
-// build.gradle based on:
-// https://github.com/ammarahm-ed/react-native-jsi-template
-
 buildscript {
   // Buildscript is evaluated before everything else so we can't use getExtOrDefault
   repositories {
@@ -26,36 +23,39 @@ def getExtOrIntegerDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties['RNClusterer_' + name]).toInteger()
 }
 
+def basePath = projectDir.toPath().normalize()
+def nodeModulesDir = ''
+def reactNativeDir = ''
 def found = false
-def reactNativeDir = null
-def androidSourcesName = 'React Native sources'
-def parentDir = rootProject.projectDir
 
-if (rootProject.ext.has('reactNativeAndroidRoot')) {
-  reactNativeDir = rootProject.ext.get('reactNativeAndroidRoot')
-} else {
-  reactNativeDir = new File(
-          projectDir,
-          '/../../../node_modules/react-native/android'
-  )
-}
-if (reactNativeDir.exists()) {
+// Find node_modules inside the example project
+nodeModulesDir = Paths.get(basePath.getParent().toString(), "example/node_modules")
+reactNativeDir = Paths.get(nodeModulesDir.toString(), "react-native/android")
+if (nodeModulesDir.toFile().exists() && reactNativeDir.toFile().exists()) {
   found = true
-} else {
-  1.upto(5, {
-    if (found) return true
-    parentDir = reactNativeDir.parentFile
+}
 
-    reactNativeDir = new File(
-            parentDir,
-            'node_modules/react-native/android'
-    )
-
-    if (reactNativeDir.exists()) {
+if(!found){
+  // Node's module resolution algorithm searches up to the root directory,
+  // after which the base path will be null
+  while (basePath) {
+    nodeModulesDir = Paths.get(basePath.toString(), "node_modules")
+    reactNativeDir = Paths.get(nodeModulesDir.toString(), "react-native/android")
+    if (nodeModulesDir.toFile().exists() && reactNativeDir.toFile().exists()) {
       found = true
     }
-  })
+    basePath = basePath.getParent()
+  }
 }
+
+if(!found) {
+    throw new GradleException(
+            "${project.name}: unable to locate React Native android sources. " +
+                    "Ensure you have you installed React Native as a dependency in your project and try again.")
+}
+
+def nodeModulesPath = nodeModulesDir.toString().replace("\\", "/")
+def reactNativePath = reactNativeDir.toString().replace("\\", "/")
 
 android {
   compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
@@ -70,9 +70,9 @@ android {
 
     externalNativeBuild {
         cmake {
-            cppFlags "-O2 -frtti -fexceptions -Wall -fstack-protector-all", "-DONANDROID"
+            cppFlags "-O3 -frtti -fexceptions -Wall -fstack-protector-all", "-DONANDROID"
             abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
-            arguments  "-DANDROID_STL=c++_shared", "-DNODE_MODULES_DIR=${reactNativeDir.parentFile.parentFile.toString()}"
+            arguments "-DANDROID_STL=c++_shared", "-DNODE_MODULES_DIR=${nodeModulesPath}"
         }
     }
 
@@ -83,6 +83,13 @@ android {
           path "CMakeLists.txt"
       }
   }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+    }
+  }
+
 
   lintOptions {
     disable 'GradleCompatible'
@@ -106,19 +113,9 @@ repositories {
   jcenter()
   google()
 
-  if (reactNativeDir.exists()) {
-    maven {
-      url reactNativeDir.toString()
-      name androidSourcesName
-    }
-    logger.info(":${project.name}:reactNativeAndroidRoot ${reactNativeDir.canonicalPath}")
-  }
-
-  if (!found) {
-    throw new GradleException(
-            "${project.name}: unable to locate React Native android sources. " +
-                    "Ensure you have you installed React Native as a dependency in your project and try again."
-    )
+  maven {
+    url reactNativePath
+    name 'React Native sources'
   }
 }
 
@@ -126,7 +123,7 @@ dependencies {
   //noinspection GradleDynamicVersion
   implementation 'com.facebook.react:react-native:+'
 
-  def rnAAR = fileTree(reactNativeDir.toString()).matching({ it.include "**/**/*.aar" }).singleFile
+  def rnAAR = fileTree(reactNativePath).matching({ it.include "**/**/*.aar" }).singleFile
   extractJNI(files(rnAAR))
 }
 

@@ -23,7 +23,7 @@ public class ClustererModule extends ReactContextBaseJavaModule {
   @ReactMethod(isBlockingSynchronousMethod = true)
   public boolean install() {
     try {
-      System.loadLibrary("clusterer");
+      System.loadLibrary("rnclusterer");
 
       ReactApplicationContext context = getReactApplicationContext();
       initialize(

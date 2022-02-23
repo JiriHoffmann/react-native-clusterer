@@ -66,3 +66,4 @@ lib/
 supercluster/
 example/yarn.lock
 example/ios/Podfile.lock
+example/package-lock.json

@@ -12,6 +12,8 @@ target 'ClustererExample' do
     :hermes_enabled => true
   )
 
+  pod 'react-native-clusterer', :path => '../..'
+
   # Enables Flipper.
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and
