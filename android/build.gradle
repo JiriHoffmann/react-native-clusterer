@@ -43,6 +43,7 @@ if(!found){
     reactNativeDir = Paths.get(nodeModulesDir.toString(), "react-native/android")
     if (nodeModulesDir.toFile().exists() && reactNativeDir.toFile().exists()) {
       found = true
+      break;
     }
     basePath = basePath.getParent()
   }
