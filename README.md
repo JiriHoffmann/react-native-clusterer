@@ -1,41 +1,113 @@
-# React-native-clusterer
+# React Native Clusterer
 
-React Native clustering library using a c++ implementation of [supercluster](https://github.com/mapbox/supercluster) and JSI bindings for up to 10x faster initial point loading times than its JavaScript counterpart.
+The most comprehensive and yet easiest to use react native point clustering library. Uses c++ implementation of [supercluster](https://github.com/mapbox/supercluster) and JSI bindings for up to 10x faster initial point loading times than its JavaScript counterpart.
 
 Check out the example for speed comparisons.
 
-## Installation
+# Installation
 
 ```sh
 npm install react-native-clusterer
-```
 
-#### `iOS`
-
-```
+# iOS
 cd ios && pod install
 ```
 
-## Usage
+# Usage
+
+You can use this library either as a react native component ([Clusterer](#Clusterer)) for the most hassle free implementation or as a class ([Supercluster](#Supercluster)) for more fine-tuned controls. Supercluster class can be used as a drag-and-drop replacement for JS version with some caveats, check out `destroy()` method and `TO-DOs`.
+
+# Clusterer
 
 ```js
-import Supercluster from 'react-native-clusterer';
+//...
+import { Clusterer } from 'react-native-clusterer';
+import MapView, { Marker } from 'react-native-maps';
 
 // ...
+const [markers, setMarkers] = useState([]);
+const [region, setRegion] = useState(initialRegion);
 
-// Create a new instance of supercluster
+// ...
+return (
+  <MapView
+    onRegionChangeComplete={setRegion}
+    // ... other props
+  >
+    <Clusterer
+      data={markers}
+      region={region}
+      options={DEFAULT_OPTIONS}
+      mapDimensions={{ width: MAP_WIDTH, height: MAP_HEIGHT }}
+      renderItem={(item) => {
+        return (
+           <Marker
+            // ... marker props
+          >
+            {/*  marker children - callout, custom marker, etc. */}
+            {item.properties.cluster ? (
+              // render cluster
+            ) : (
+              // render marker
+            )}
+          </Marker>
+        );
+      }}
+    />
+  </MapView>
+);
+```
+
+## Props
+
+### `region`
+
+Region from the `<MapView />` Component. Object containing `latitude`, `longitude`, `latitudeDelta` and `longitudeDelta` values.
+
+### `data`
+
+Same as [points](#load(points)) passed to `supercluster.load()`.
+
+### `options`
+
+Same as [options](#Options) for Supercluster.Optional.
+
+### `mapDimensions`
+
+Object containing `width` and `height` of the `<MapView />` Component
+
+### `renderItem`
+
+Function that takes an item (`GeoJSON Feature point or cluster`) and returns a Marker component.
+
+# Supercluster
+
+```js
+//...
+import Supercluster from 'react-native-clusterer';
+import MapView, { Marker } from 'react-native-maps';
+
+//...
+
+const [region, setRegion] = useState(initialRegion);
+const [clusteredMarkers, setClusteredMarkers] = useState([]);
+
+// Create a new instance of Supercluster
+// wrap in useMemo to prevent unnecessary re-renders
 const supercluster = new Supercluster(options);
 
 // Load points
-supercluster.load(data);
+useEffect(() => {
+  supercluster.load(points);
+}, [points]);
 
-// Get clusters in bbox
-const clusters = supercluster.getClusters([-179, -10, -177, 10], 1)
+// Update clusters on region change
+useEffect(() => {
+  setClusteredMarkers(
+    supercluster.getClustersFromRegion(region, mapDimensions)
+  );
+}, [region]);
 
-// Get clusters on a tile
-const tileClusters = supercluster.getTile(2, 1, 2)
-
-// ...
 // Don't forget to clean up to free memory
 // Most likely implementation (on component unmount)
 useEffect(() => {
@@ -45,15 +117,29 @@ useEffect(() => {
     // ...
   };
 }, []);
+
+// ...
+return (
+  <MapView
+    onRegionChangeComplete={setRegion}
+    // ... other props
+  >
+  {clusteredMarkers.map(marker => (
+          <Marker
+            // ... marker props
+          >
+            {/*
+              // ... marker children - callout, custom marker, etc.
+            */}
+          </Marker>
+        );
+  )}
+    />
+  </MapView>
+);
 ```
 
-#### Points
-
-Array of [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) objects. Each feature's `geometry` must be a [GeoJSON Point](https://tools.ietf.org/html/rfc7946#section-3.1.2). Once loaded, index is immutable.
-
-Note: Currently supported Point properties are `null`, `boolean`, `number`, `string`. The rest will be discarded whent the supercluster is created. Other properties can be turned into a JSON and stored as a string.
-
-#### Options
+## Options
 
 | Option     | Default | Description                                                       |
 | ---------- | ------- | ----------------------------------------------------------------- |
@@ -70,9 +156,15 @@ Note: Currently supported Point properties are `null`, `boolean`, `number`, `str
 
 Loads an array of [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) objects. Each feature's `geometry` must be a [GeoJSON Point](https://tools.ietf.org/html/rfc7946#section-3.1.2). Once loaded, index is immutable.
 
+Note: Currently supported Point properties are `null`, `boolean`, `number`, `string`. The rest will be discarded whent the supercluster is created. Other properties can be turned into a JSON and stored as a string.
+
 #### `getClusters(bbox, zoom)`
 
 For the given `bbox` array (`[westLng, southLat, eastLng, northLat]`) and integer `zoom`, returns an array of clusters and points as [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) objects.
+
+#### `getClustersFromRegion(region, mapDimensions)`
+
+For the given `region` from react-native-maps `<MapView />` and an object containing `width` and `height` of the component, returns an array of clusters and points as [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) objects.
 
 #### `getTile(z, x, y)`
 
@@ -80,27 +172,31 @@ For a given zoom and x/y coordinates, returns a [geojson-vt](https://github.com/
 
 #### `getChildren(clusterId)`
 
-Returns the children of a cluster (on the next zoom level) given its id (`cluster_id` value from feature properties).
+Returns the children of a cluster (on the next zoom level) given its id (`clusterId` value from feature properties).
 
 #### `getLeaves(clusterId, limit = 10, offset = 0)`
 
-Returns all the points of a cluster (given its `cluster_id`), with pagination support:
+Returns all the points of a cluster (given its `clusterId`), with pagination support:
 `limit` is the number of points to return, and `offset` is the number of points to skip (for pagination).
 
 #### `getClusterExpansionZoom(clusterId)`
 
-Returns the zoom on which the cluster expands into several children (useful for "click to zoom" feature) given the cluster's `cluster_id`.
+Returns the zoom on which the cluster expands into several children (useful for "click to zoom" feature) given the cluster's `clusterId`.
+
+
+#### `expandCluster(clusterId)`
+Returns a region containing the center of all the points in a cluster and the delta value by which it should be zoomed out to see all the points. Usefull for animating a MapView after a cluster press.
 
 #### `destroy()`
 
-Destroys the c++ cluster and frees its memory
+IMPORTANT: Since JS doesnt have destructors, we have to make sure the cluster stored in c++ memory is also deleted. This method is called automatically when the using the `<Clusterer />` compoenent. Open to any suggestions for Class implementation.
 
 ## TO-DOs
 
 - [x] Proper input and return types for methods
 - [x] Implement `getClusters(bbox, zoom)`
 - [x] Parse and return additional Point properties added by users
-- [ ] Find a better implementation for `destroy()`
+- [x] Find a better implementation for `destroy()`. See `destroy()` implementation.
 - [ ] Map/reduce options
 
 ## Contributing
@@ -110,5 +206,7 @@ See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the 
 ## License
 
 MIT
+
+Copyright (c) 2021 Jiri Hoffmann
 
 Uses supercluster for point clustering. Check out [mapbox/supercluster.hpp](https://github.com/mapbox/supercluster.hpp) for additional licensing.
