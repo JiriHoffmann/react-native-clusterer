@@ -198,7 +198,7 @@ IMPORTANT: Since JS doesnt have destructors, we have to make sure the cluster st
 - [x] Proper input and return types for methods
 - [x] Implement `getClusters(bbox, zoom)`
 - [x] Parse and return additional Point properties added by users
-- [x] Find a better implementation for `destroy()`. See `destroy()` implementation.
+- [ ] Find a better implementation for `destroy()`.
 - [ ] Map/reduce options
 
 ## Contributing
