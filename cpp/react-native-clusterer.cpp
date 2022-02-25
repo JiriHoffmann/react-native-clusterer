@@ -18,7 +18,7 @@ namespace clusterer
 					return jsi::Value();
 				}
 
-				cluster_load(rt, args[0], args[1], args[2]);
+				clusterer::load(rt, args[0], args[1], args[2]);
 				return jsi::Value(); });
 
 		auto getTile = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getTile"), 4, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
@@ -35,7 +35,7 @@ namespace clusterer
 					return jsi::Value();
 				}
 
-				return  cluster_getTile(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
+				return  clusterer::getTile(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
 
 		auto getClusters = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getClusters"), 3, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																 {
@@ -58,7 +58,7 @@ namespace clusterer
 							jsibbox.getValueAtIndex(rt, 2).asNumber(),
 							jsibbox.getValueAtIndex(rt, 3).asNumber(),
 					};
-					return  cluster_getClusters(rt, args[0].asString(rt).utf8(rt), bbox, (int)args[2].asNumber());
+					return  clusterer::getClusters(rt, args[0].asString(rt).utf8(rt), bbox, (int)args[2].asNumber());
 				} catch (const std::exception& e) {
 					jsi::detail::throwJSError(rt, "React-Native-Clusterer: GetClusters error, make sure boundingBox is an array of 4 numbers");
                     return jsi::Value();
@@ -78,7 +78,7 @@ namespace clusterer
 					return jsi::Value();
 				}
 
-				return cluster_getChildren(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber()); });
+				return clusterer::getChildren(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber()); });
 
 		auto getLeaves = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getLeaves"), 4, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 															   {
@@ -93,7 +93,7 @@ namespace clusterer
 					return jsi::Value();
 				}
 
-				return cluster_getLeaves(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
+				return clusterer::getLeaves(rt, args[0].asString(rt).utf8(rt), (int)args[1].asNumber(), (int)args[2].asNumber(), (int)args[3].asNumber()); });
 
 		auto getClusterExpansionZoom = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getClusterExpansionZoom"), 2, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																			 {
@@ -108,11 +108,11 @@ namespace clusterer
 					 return jsi::Value();
 				}
 
-				return cluster_getClusterExpansionZoom(args[0].asString(rt).utf8(rt), (int)args[1].asNumber()); });
+				return clusterer::getClusterExpansionZoom(args[0].asString(rt).utf8(rt), (int)args[1].asNumber()); });
 
 		auto destroyCluster = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "destroyCluster"), 1, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																	{
-				auto destroyed = cluster_destroyCluster(args[0].asString(rt).utf8(rt));
+				auto destroyed = clusterer::destroyCluster(args[0].asString(rt).utf8(rt));
 				return jsi::Value(destroyed); });
 
 		jsi::Object module = jsi::Object(jsiRuntime);
@@ -129,6 +129,6 @@ namespace clusterer
 
 	void cleanup()
 	{
-		cluster_cleanup();
+		clusterer::cleanup();
 	}
 }
