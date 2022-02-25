@@ -47,7 +47,8 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
 
   const _handleRunCPP = () => {
     const initS = PerformanceNow();
-    const supercluster = new Supercluster(data, superclusterOptions);
+    const supercluster = new Supercluster(superclusterOptions);
+    supercluster.load(data);
     const initE = PerformanceNow();
 
     const getTileS = PerformanceNow();

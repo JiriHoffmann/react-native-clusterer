@@ -3,7 +3,11 @@ import type Supercluster from './types';
 
 const module = NativeModules.Clusterer;
 
-if (module && typeof module.install === 'function' && !(global as any).clustererModule) {
+if (
+  module &&
+  typeof module.install === 'function' &&
+  !(global as any).clustererModule
+) {
   module.install();
 }
 
@@ -14,11 +18,10 @@ export default class SuperclusterClass<
   C extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps
 > {
   private id: string;
+  private loaded: boolean = false;
+  private options?: Supercluster.Options<P, C>;
 
-  constructor(
-    points: Array<Supercluster.PointFeature<P>>,
-    options?: Supercluster.Options<P, C>
-  ) {
+  constructor(options?: Supercluster.Options<P, C>) {
     if (!clusterer) {
       throw new Error(
         `The package 'react-native-clusterer' doesn't seem to be linked. Make sure: \n\n` +
@@ -35,7 +38,19 @@ export default class SuperclusterClass<
     this.id = `${Math.floor(
       Math.random() * Math.floor(Math.random() * Date.now())
     )}`;
-    clusterer.init(this.id, points, options);
+    this.options = options;
+  }
+
+  /**
+   * Loads an array of GeoJSON Feature objects. Each feature's geometry
+   * must be a GeoJSON Point. Once loaded, index is immutable.
+   *
+   * @param points Array of GeoJSON Features, the geometries being GeoJSON Points.
+   */
+  load(points: Array<Supercluster.PointFeature<P>>): SuperclusterClass<P, C> {
+    this.loaded = true;
+    clusterer.load(this.id, points, this.options);
+    return this;
   }
 
   /**
@@ -49,7 +64,7 @@ export default class SuperclusterClass<
     bbox: GeoJSON.BBox,
     zoom: number
   ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
-    return clusterer.getClusters(this.id, bbox, zoom);
+    return !this.loaded ? [] : clusterer.getClusters(this.id, bbox, zoom);
   }
 
   /**
@@ -58,7 +73,9 @@ export default class SuperclusterClass<
    * tile object with cluster any point features.
    */
   getTile(x: number, y: number, zoom: number): Supercluster.Tile<C, P> | null {
-    return { features: clusterer.getTile(this.id, x, y, zoom) };
+    return !this.loaded
+      ? null
+      : { features: clusterer.getTile(this.id, x, y, zoom) };
   }
 
   /**
@@ -70,7 +87,7 @@ export default class SuperclusterClass<
   getChildren(
     clusterId: number
   ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
-    return clusterer.getChildren(this.id, clusterId);
+    return !this.loaded ? [] : clusterer.getChildren(this.id, clusterId);
   }
 
   /**
@@ -85,7 +102,7 @@ export default class SuperclusterClass<
     limit?: number,
     offset?: number
   ): Array<Supercluster.PointFeature<P>> {
-    return clusterer.getLeaves(this.id, clusterId, limit ?? 10, offset ?? 0);
+    return !this.loaded ? [] : clusterer.getLeaves(this.id, clusterId, limit ?? 10, offset ?? 0);
   }
 
   /**
@@ -95,13 +112,14 @@ export default class SuperclusterClass<
    * @param clusterId Cluster ID (`cluster_id` value from feature properties).
    */
   getClusterExpansionZoom(clusterId: number): number {
-    return clusterer.getClusterExpansionZoom(this.id, clusterId);
+    return !this.loaded ? 0 : clusterer.getClusterExpansionZoom(this.id, clusterId);
   }
 
   /**
    * Destroy the instance.
+   * @returns True if cluster exists and was destroyed, else false.
    */
-  destroy(): void {
-    clusterer.destroyCluster(this.id);
+  destroy(): boolean {
+    return clusterer.destroyCluster(this.id);
   }
 }

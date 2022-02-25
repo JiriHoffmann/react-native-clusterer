@@ -4,7 +4,7 @@ namespace clusterer
 {
 	void install(jsi::Runtime &jsiRuntime)
 	{
-		auto init = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "init"), 2, [](jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args, size_t count) -> jsi::Value
+		auto load = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "init"), 2, [](jsi::Runtime &rt, const jsi::Value &thisVal, const jsi::Value *args, size_t count) -> jsi::Value
 														  {
 				if (count != 3)
 				{
@@ -18,7 +18,7 @@ namespace clusterer
 					return jsi::Value();
 				}
 
-				cluster_init(rt, args[0], args[1], args[2]);
+				cluster_load(rt, args[0], args[1], args[2]);
 				return jsi::Value(); });
 
 		auto getTile = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getTile"), 4, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
@@ -112,11 +112,11 @@ namespace clusterer
 
 		auto destroyCluster = jsi::Function::createFromHostFunction(jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "destroyCluster"), 1, [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args, size_t count) -> jsi::Value
 																	{
-				cluster_destroyCluster(args[0].asString(rt).utf8(rt));
-				return jsi::Value(); });
+				auto destroyed = cluster_destroyCluster(args[0].asString(rt).utf8(rt));
+				return jsi::Value(destroyed); });
 
 		jsi::Object module = jsi::Object(jsiRuntime);
-		module.setProperty(jsiRuntime, "init", move(init));
+		module.setProperty(jsiRuntime, "load", move(load));
 		module.setProperty(jsiRuntime, "getTile", move(getTile));
 		module.setProperty(jsiRuntime, "getClusters", move(getClusters));
 		module.setProperty(jsiRuntime, "getChildren", move(getChildren));

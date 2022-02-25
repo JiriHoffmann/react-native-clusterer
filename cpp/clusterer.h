@@ -9,19 +9,19 @@
 using namespace std;
 using namespace facebook;
 
-void cluster_init(jsi::Runtime &rt, jsi::Value const &jsiName, jsi::Value const &jsiFeatures, jsi::Value const &jsiOptions);
+void cluster_load(jsi::Runtime &rt, jsi::Value const &jsiID, jsi::Value const &jsiFeatures, jsi::Value const &jsiOptions);
 
-jsi::Array cluster_getTile(jsi::Runtime &rt, const string &name, int zoom, int x, int y);
+jsi::Array cluster_getTile(jsi::Runtime &rt, const string &id, int zoom, int x, int y);
 
-jsi::Array cluster_getClusters(jsi::Runtime &rt, const string &name, double bbox[4], int zoom);
+jsi::Array cluster_getClusters(jsi::Runtime &rt, const string &id, double bbox[4], int zoom);
 
-jsi::Array cluster_getChildren(jsi::Runtime &rt, const string &name, int cluster_id);
+jsi::Array cluster_getChildren(jsi::Runtime &rt, const string &id, int cluster_id);
 
-jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string &name, int cluster_id, int limit, int offset);
+jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string &id, int cluster_id, int limit, int offset);
 
-int cluster_getClusterExpansionZoom(const string &name, int cluster_id);
+int cluster_getClusterExpansionZoom(const string &id, int cluster_id);
 
-void cluster_destroyCluster(const string &name);
+bool cluster_destroyCluster(const string &id);
 
 void cluster_cleanup();
 
@@ -30,7 +30,7 @@ void cluster_cleanup();
 Helper functions
 
 */
-mapbox::supercluster::Supercluster* getSuperclusterFromMap(const string &name);
+mapbox::supercluster::Supercluster *getSuperclusterFromMap(const string &id);
 
 void parseJSIFeatures(jsi::Runtime &rt, mapbox::feature::feature_collection<double> &features, jsi::Value const &jsiFeatures);
 

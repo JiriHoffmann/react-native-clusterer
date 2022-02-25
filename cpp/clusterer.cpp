@@ -2,7 +2,7 @@
 
 map<string, mapbox::supercluster::Supercluster *> superclusterMap = map<string, mapbox::supercluster::Supercluster *>();
 
-void cluster_init(jsi::Runtime &rt, jsi::Value const &jsiName, jsi::Value const &jsiFeatures, jsi::Value const &jsiOptions)
+void cluster_load(jsi::Runtime &rt, jsi::Value const &jsiID, jsi::Value const &jsiFeatures, jsi::Value const &jsiOptions)
 {
     // jsi features to cpp
     mapbox::feature::feature_collection<double> features;
@@ -12,14 +12,22 @@ void cluster_init(jsi::Runtime &rt, jsi::Value const &jsiName, jsi::Value const 
     mapbox::supercluster::Options options;
     parseJSIOptions(rt, options, jsiOptions);
 
+    auto id = jsiID.asString(rt).utf8(rt);
+
+    // create supercluster and replace the old one
     auto *supercluster = new mapbox::supercluster::Supercluster(features, options);
-    auto name = jsiName.asString(rt).utf8(rt);
-    superclusterMap[name] = supercluster;
+    if (superclusterMap.find(id) != superclusterMap.end())
+    {
+        auto old = superclusterMap[id];
+        delete old;
+    }
+
+    superclusterMap[id] = supercluster;
 }
 
-jsi::Array cluster_getTile(jsi::Runtime &rt, const string &name, int zoom, int x, int y)
+jsi::Array cluster_getTile(jsi::Runtime &rt, const string &id, int zoom, int x, int y)
 {
-    mapbox::supercluster::Supercluster *supercluster = getSuperclusterFromMap(name);
+    mapbox::supercluster::Supercluster *supercluster = getSuperclusterFromMap(id);
     auto tiles = supercluster->getTile(zoom, x, y);
 
     jsi::Array result = jsi::Array(rt, tiles.size());
@@ -34,9 +42,9 @@ jsi::Array cluster_getTile(jsi::Runtime &rt, const string &name, int zoom, int x
     return result;
 }
 
-jsi::Array cluster_getClusters(jsi::Runtime &rt, const string &name, double bbox[4], int zoom)
+jsi::Array cluster_getClusters(jsi::Runtime &rt, const string &id, double bbox[4], int zoom)
 {
-    mapbox::supercluster::Supercluster *supercluster = getSuperclusterFromMap(name);
+    mapbox::supercluster::Supercluster *supercluster = getSuperclusterFromMap(id);
     auto clusters = supercluster->getClusters(bbox, zoom);
     jsi::Array result = jsi::Array(rt, clusters.size());
 
@@ -51,9 +59,9 @@ jsi::Array cluster_getClusters(jsi::Runtime &rt, const string &name, double bbox
     return result;
 };
 
-jsi::Array cluster_getChildren(jsi::Runtime &rt, const string &name, int cluster_id)
+jsi::Array cluster_getChildren(jsi::Runtime &rt, const string &id, int cluster_id)
 {
-    mapbox::supercluster::Supercluster *supercluster = getSuperclusterFromMap(name);
+    mapbox::supercluster::Supercluster *supercluster = getSuperclusterFromMap(id);
     auto children = supercluster->getChildren(cluster_id);
     jsi::Array result = jsi::Array(rt, children.size());
 
@@ -69,9 +77,9 @@ jsi::Array cluster_getChildren(jsi::Runtime &rt, const string &name, int cluster
     return result;
 }
 
-jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string &name, int cluster_id, int limit, int offset)
+jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string &id, int cluster_id, int limit, int offset)
 {
-    mapbox::supercluster::Supercluster *supercluster = getSuperclusterFromMap(name);
+    mapbox::supercluster::Supercluster *supercluster = getSuperclusterFromMap(id);
     auto leaves = supercluster->getLeaves(cluster_id, limit, offset);
     jsi::Array result = jsi::Array(rt, leaves.size());
 
@@ -87,17 +95,23 @@ jsi::Array cluster_getLeaves(jsi::Runtime &rt, const string &name, int cluster_i
     return result;
 }
 
-int cluster_getClusterExpansionZoom(const string &name, int cluster_id)
+int cluster_getClusterExpansionZoom(const string &id, int cluster_id)
 {
-    mapbox::supercluster::Supercluster *supercluster = getSuperclusterFromMap(name);
+    mapbox::supercluster::Supercluster *supercluster = getSuperclusterFromMap(id);
     return (int)supercluster->getClusterExpansionZoom(cluster_id);
 }
 
-void cluster_destroyCluster(const string &name)
+bool cluster_destroyCluster(const string &id)
 {
-    mapbox::supercluster::Supercluster *supercluster = getSuperclusterFromMap(name);
-    delete supercluster;
-    superclusterMap.erase(name);
+    if (superclusterMap.find(id) != superclusterMap.end())
+    {
+        auto sc = superclusterMap[id];
+        delete sc;
+        superclusterMap.erase(id);
+        return true;
+    }
+    else
+        return false;
 }
 
 void cluster_cleanup()
@@ -115,12 +129,12 @@ Helper functions
 
 */
 
-mapbox::supercluster::Supercluster* getSuperclusterFromMap(const string &name){
-    if (superclusterMap.find(name) != superclusterMap.end()) {
-        return superclusterMap[name];
-    } else {
+mapbox::supercluster::Supercluster *getSuperclusterFromMap(const string &id)
+{
+    if (superclusterMap.find(id) != superclusterMap.end())
+        return superclusterMap[id];
+    else
         throw std::runtime_error("This supercluster doesn't exist, are you sure it's not deleted?");
-    }
 }
 
 void parseJSIFeatures(jsi::Runtime &rt, mapbox::feature::feature_collection<double> &features, jsi::Value const &jsiFeatures)

@@ -23,8 +23,17 @@ import Supercluster from 'react-native-clusterer';
 
 // ...
 
-const supercluster = new Supercluster(points, options);
-const clusters = supercluster.getTile(2, 1, 2)
+// Create a new instance of supercluster
+const supercluster = new Supercluster(options);
+
+// Load points
+supercluster.load(data);
+
+// Get clusters in bbox
+const clusters = supercluster.getClusters([-179, -10, -177, 10], 1)
+
+// Get clusters on a tile
+const tileClusters = supercluster.getTile(2, 1, 2)
 
 // ...
 // Don't forget to clean up to free memory
@@ -56,6 +65,10 @@ Note: Currently supported Point properties are `null`, `boolean`, `number`, `str
 | generateId | false   | Whether to generate ids for input features in vector tiles.       |
 
 ## Methods
+
+### `load(points)`
+
+Loads an array of [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) objects. Each feature's `geometry` must be a [GeoJSON Point](https://tools.ietf.org/html/rfc7946#section-3.1.2). Once loaded, index is immutable.
 
 #### `getClusters(bbox, zoom)`
 
