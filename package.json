@@ -20,7 +20,8 @@
     "!**/__tests__",
     "!**/__fixtures__",
     "!**/__mocks__",
-    "!android/.cxx"
+    "!android/.cxx",
+    "!android/.gradle"
   ],
   "scripts": {
     "test": "jest",
@@ -33,13 +34,20 @@
     "bootstrap": "yarn example && yarn && yarn pods"
   },
   "keywords": [
+    "react",
+    "native",
     "react-native",
+    "react-native-maps",
+    "map",
+    "maps",
+    "mapview",
     "ios",
     "android",
     "cluster",
     "clusters",
     "clustering",
     "clustering-algorithm",
+    "super",
     "supercluster"
   ],
   "repository": "https://github.com/JiriHoffmann/react-native-clusterer",
