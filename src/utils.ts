@@ -1,5 +1,5 @@
-import type { BBox, Feature, Point } from 'geojson';
-import type { LatLng, MapDimensions, Region } from './types';
+import type { Feature, Point } from 'geojson';
+import type { BBox, LatLng, Region } from './types';
 
 const calculateDelta = (x: number, y: number): number =>
   x > y ? x - y : y - x;
@@ -26,27 +26,6 @@ export const regionToBBox = (region: Region): BBox => {
   ];
 };
 
-export const getBoundsZoomLevel = (bounds: BBox, dims: MapDimensions, maxZoom: number) => {
-
-  function latRad(lat: number) {
-    const sin = Math.sin((lat * Math.PI) / 180);
-    const radX2 = Math.log((1 + sin) / (1 - sin)) / 2;
-    return Math.max(Math.min(radX2, Math.PI), -Math.PI) / 2;
-  }
-
-  function zoom(mapPx: number, worldPx: number, fraction: number) {
-    return Math.floor(Math.log(mapPx / worldPx / fraction) / Math.LN2);
-  }
-
-  const latFraction = (latRad(bounds[3]) - latRad(bounds[1])) / Math.PI;
-  const lngDiff = bounds[2] - bounds[0];
-  const lngFraction = (lngDiff < 0 ? lngDiff + 360 : lngDiff) / 360;
-  const latZoom = zoom(dims.height, dims.height, latFraction);
-  const lngZoom = zoom(dims.width, dims.width, lngFraction);
-
-  return Math.min(latZoom, lngZoom, maxZoom);
-};
-
 export const getMarkersRegion = (points: LatLng[]): Region => {
   const coordinates = {
     minX: points[0]!.latitude,
@@ -71,8 +50,8 @@ export const getMarkersRegion = (points: LatLng[]): Region => {
   return {
     latitude: calculateAverage(minX, maxX),
     longitude: calculateAverage(minY, maxY),
-    latitudeDelta: deltaX * 2,
-    longitudeDelta: deltaY * 2,
+    latitudeDelta: deltaX * 1.5,
+    longitudeDelta: deltaY * 1.5,
   };
 };
 

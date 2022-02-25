@@ -8,6 +8,7 @@
 
 import type * as GeoJSON from 'geojson';
 
+export type BBox = [number, number, number, number];
 export interface Region {
   latitude: number;
   longitude: number;
@@ -120,6 +121,7 @@ declare namespace Supercluster {
     point_count_abbreviated: string;
   }
   type ClusterFeature<C> = PointFeature<ClusterProperties & C>;
+  type ClusterFeatureClusterer<C> = PointFeature<ClusterProperties & C> & {getClusterExpansionRegion: () => Region;};
   interface TileFeature<C, P> {
     type: 1;
     geometry: Array<[number, number]>;
