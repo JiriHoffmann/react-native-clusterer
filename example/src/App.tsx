@@ -8,81 +8,41 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
-import { TextInput } from 'react-native';
-import { getRandomData, parsedPlacesData } from './places';
-import { GetTile } from './GetTile';
-import { GetClusters } from './GetClusters';
+import { Map } from './Map';
+import { Comparison } from './Comparison';
 
-const DEFAULT_SIZE = 1000;
 
 export default function App() {
-  const [data, setData] = useState<any[]>(getRandomData(DEFAULT_SIZE));
-  const [dataSizeInput, setDataSizeInput] = useState(DEFAULT_SIZE);
-  const [showType, setType] = useState<null | 'tile' | 'cluster'>(null);
-
-  const _handleDefaultDataPress = () => {
-    setData(parsedPlacesData.features);
-  };
-
-  const _handleGenerateDataPress = () => {
-    setData(getRandomData(dataSizeInput));
-  };
+  const [showType, setType] = useState<null | 'map' | 'speed'>(null);
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Supercluster comparison</Text>
-      <Text style={styles.h2}>Input Data</Text>
-
-      <TouchableOpacity
-        style={styles.defaultDataButton}
-        onPress={_handleDefaultDataPress}
-      >
-        <Text>Use supercluster.js test data</Text>
-      </TouchableOpacity>
-      <Text style={styles.h2}>Or generate random points</Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={{ ...styles.input, marginRight: 10 }}
-          placeholder="Enter data size here"
-          onChangeText={(t) => setDataSizeInput(t as any)}
-          keyboardType={'number-pad'}
-          value={`${dataSizeInput}`}
-          multiline={false}
-        />
-        <TouchableOpacity
-          style={styles.button}
-          onPress={_handleGenerateDataPress}
-        >
-          <Text>Generate</Text>
-        </TouchableOpacity>
-      </View>
-      <Text style={styles.h2}>Data size: {data.length}</Text>
-      <View style={styles.inputContainer}>
+      <Text style={styles.header}>Clusterer</Text>
+      <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={{
-            ...styles.type,
-            borderColor: '#9c8eed',
+            ...styles.button,
+            borderColor: '#ed8e8e',
             marginRight: 10,
-            backgroundColor: showType === 'tile' ? '#9c8eed' : '#9c8eed50',
+            backgroundColor: showType === 'map' ? '#ed8e8e' : '#ed8e8e50',
           }}
-          onPress={() => setType('tile')}
+          onPress={() => setType('map')}
         >
-          <Text>getTile</Text>
+          <Text>🗺️ Map Clustering</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{
-            ...styles.type,
-            borderColor: '#eda78e',
-            backgroundColor: showType === 'cluster' ? '#eda78e' : '#eda78e50',
+            ...styles.button,
+            borderColor: '#8eedb1',
+            backgroundColor: showType === 'speed' ? '#8eedb1' : '#8eedb150',
           }}
-          onPress={() => setType('cluster')}
+          onPress={() => setType('speed')}
         >
-          <Text>getClusters</Text>
+          <Text>⚡ Speed Comparison</Text>
         </TouchableOpacity>
       </View>
-
-      {showType === 'tile' && <GetTile data={data} />}
-      {showType === 'cluster' && <GetClusters data={data} />}
+      {showType === 'map' && <Map />}
+      {showType === 'speed' && <Comparison />}
     </SafeAreaView>
   );
 }
@@ -90,36 +50,16 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    margin: 20,
-  },
-  content: {
-    flex: 1,
   },
   header: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  h2: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    marginHorizontal: 20,
   },
   buttonContainer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-  },
-  defaultDataButton: {
-    marginVertical: 5,
-    borderRadius: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 40,
-    backgroundColor: '#8eb3ed',
+    marginBottom: 10,
+    marginHorizontal: 20,
   },
   button: {
     flex: 1,
@@ -127,26 +67,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     height: 40,
-    backgroundColor: '#8eb3ed',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 5,
-    borderColor: '#8eb3ed',
-    height: 40,
-  },
-  type: {
-    flex: 1,
-    borderRadius: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 40,
     borderWidth: 2,
-    marginTop: 20,
   },
 });

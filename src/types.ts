@@ -8,6 +8,23 @@
 
 import type * as GeoJSON from 'geojson';
 
+export interface Region {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+}
+
+export interface MapDimensions {
+  width: number;
+  height: number;
+}
+
+export interface LatLng {
+  latitude: number;
+  longitude: number;
+}
+
 declare namespace Supercluster {
   interface Options<P, C> {
     /**
@@ -15,37 +32,37 @@ declare namespace Supercluster {
      *
      * @default 0
      */
-    minZoom?: number | undefined;
+    minZoom?: number;
     /**
      * Maximum zoom level at which clusters are generated.
      *
      * @default 16
      */
-    maxZoom?: number | undefined;
+    maxZoom?: number;
     /**
      * Minimum number of points to form a cluster.
      *
      * @default 2
      */
-    minPoints?: number | undefined;
+    minPoints?: number;
     /**
      * Cluster radius, in pixels.
      *
      * @default 40
      */
-    radius?: number | undefined;
+    radius?: number;
     /**
      * (Tiles) Tile extent. Radius is calculated relative to this value.
      *
      * @default 512
      */
-    extent?: number | undefined;
+    extent?: number;
     /**
      * Whether to generate ids for input features in vector tiles.
      *
      * @default false
      */
-    generateId?: boolean | undefined;
+    generateId?: boolean;
     /**
      * Size of the KD-tree leaf node. Affects performance.
      *
@@ -113,4 +130,4 @@ declare namespace Supercluster {
   }
 }
 
-export default Supercluster
+export default Supercluster;
