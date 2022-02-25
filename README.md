@@ -78,7 +78,7 @@ Object containing `width` and `height` of the `<MapView />` Component
 
 ### `renderItem`
 
-Function that takes an item (`GeoJSON Feature point or cluster`) and returns a Marker component.
+Function that takes an item (`GeoJSON Feature point or cluster`) and returns a Marker component. `renderItem` additionally provides function getClusterExpansionRegion() inside properies for clusters (ONLY for clusters!)which will return a region that can be used to expand the cluster. Same as [expandCluster](#expandCluster) without the need for `clusterId` param.
 
 # Supercluster
 
