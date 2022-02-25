@@ -2,8 +2,6 @@
 
 The most comprehensive and yet easiest to use react native point clustering library. Uses c++ implementation of [supercluster](https://github.com/mapbox/supercluster) and JSI bindings for up to 10x faster initial point loading times than its JavaScript counterpart.
 
-Check out the example for speed comparisons.
-
 # Installation
 
 ```sh
@@ -12,6 +10,10 @@ npm install react-native-clusterer
 # iOS
 cd ios && pod install
 ```
+
+# Example
+
+Check out the example folder for a fully functional example and speed comparisons. An android make sure to update AndroidManifest.xml with com.google.android.geo.API_KEY meta data in order for Google Maps to work.
 
 # Usage
 
