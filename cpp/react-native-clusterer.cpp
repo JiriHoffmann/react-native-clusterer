@@ -129,6 +129,6 @@ namespace clusterer
 
 	void cleanup()
 	{
-		clusterer::cleanup();
+		clusterer::cleanupClusters();
 	}
 }

@@ -26,7 +26,7 @@ namespace clusterer
 
     bool destroyCluster(const string &id);
 
-    void cleanup();
+    void cleanupClusters();
 
     /*
 

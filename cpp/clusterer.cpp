@@ -116,7 +116,7 @@ namespace clusterer
             return false;
     }
 
-    void cleanup()
+    void cleanupClusters()
     {
         for (const auto &supercluster : superclusterMap)
         {
