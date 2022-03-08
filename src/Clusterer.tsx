@@ -1,10 +1,4 @@
-import React, {
-  memo,
-  ReactElement,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { FunctionComponent, memo, useEffect, useMemo } from 'react';
 import SuperclusterClass from 'react-native-clusterer';
 import type Supercluster from './types';
 import type { MapDimensions, Region } from './types';
@@ -21,44 +15,30 @@ interface ClustererProps<P, C> {
   ) => React.ReactElement;
 }
 
-// @ts-ignore TODO: typefix
-export const Clusterer: <
-  P extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps,
-  C extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps
->(
-  p: ClustererProps<P, C>
-) => ReactElement = memo(
+export const Clusterer: FunctionComponent<ClustererProps<GeoJSON.GeoJsonProperties, GeoJSON.GeoJsonProperties>> = memo(
   ({ data, options, region, mapDimensions, renderItem }) => {
-    const [markers, setMarkers] = useState<
-      // @ts-ignore TODO: typefix
-      (Supercluster.PointFeature<P> | Supercluster.ClusterFeature<C>)[]
-    >([]);
 
     const supercluster = useMemo(
       () => new SuperclusterClass(options).load(data),
       [options, data]
     );
 
-    useEffect(() => {
-      const result = supercluster.getClustersFromRegion(region, mapDimensions);
-
-      setMarkers(
-        result.map((c) => {
+    const markers = useMemo(
+      () =>
+        supercluster.getClustersFromRegion(region, mapDimensions).map((c) => {
           const cid = c?.properties?.cluster_id;
           if (!cid) return c;
 
-          const getClusterExpansionRegion = () =>
-            supercluster.expandCluster(cid);
           return {
             ...c,
             properties: {
               ...c.properties,
-              getClusterExpansionRegion,
+              getClusterExpansionRegion: () => supercluster.expandCluster(cid),
             },
           };
-        })
-      );
-    }, [data, region, mapDimensions, supercluster]);
+        }),
+      [supercluster, region, mapDimensions]
+    );
 
     useEffect(() => {
       return () => {
