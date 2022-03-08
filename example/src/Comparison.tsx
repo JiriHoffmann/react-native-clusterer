@@ -1,20 +1,19 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { FunctionComponent } from 'react';
-import { useState } from 'react';
+import React, { useState, FunctionComponent } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
-import { TextInput } from 'react-native';
 import { getRandomData, parsedPlacesData } from './places';
 import { GetTile } from './GetTile';
 import { GetClusters } from './GetClusters';
 
 const DEFAULT_SIZE = 1000;
 
-export const Comparison:FunctionComponent<{}> = () => {
+export const Comparison: FunctionComponent<{}> = () => {
   const [data, setData] = useState<any[]>(getRandomData(DEFAULT_SIZE));
   const [dataSizeInput, setDataSizeInput] = useState(DEFAULT_SIZE);
   const [showType, setType] = useState<null | 'tile' | 'cluster'>(null);
@@ -83,7 +82,7 @@ export const Comparison:FunctionComponent<{}> = () => {
       {showType === 'cluster' && <GetClusters data={data} />}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

@@ -1,6 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -10,7 +9,6 @@ import {
 } from 'react-native';
 import { Map } from './Map';
 import { Comparison } from './Comparison';
-
 
 export default function App() {
   const [showType, setType] = useState<null | 'map' | 'speed'>(null);

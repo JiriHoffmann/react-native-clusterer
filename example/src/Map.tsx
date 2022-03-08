@@ -1,7 +1,5 @@
-import React, { useCallback, useRef } from 'react';
-import { useState } from 'react';
-import { Dimensions, Text } from 'react-native';
-import { StyleSheet, View } from 'react-native';
+import React, { useState, useCallback, useRef } from 'react';
+import { Dimensions, Text, StyleSheet, View } from 'react-native';
 import { Clusterer } from 'react-native-clusterer';
 import type { supercluster } from 'react-native-clusterer';
 import MapView, { Region, Marker, Callout } from 'react-native-maps';
@@ -47,7 +45,9 @@ export const Map = () => {
           renderItem={(item) => {
             return (
               <Marker
-                key={item.properties?.cluster_id ?? `point-${item.properties?.id}`}
+                key={
+                  item.properties?.cluster_id ?? `point-${item.properties?.id}`
+                }
                 coordinate={{
                   latitude: item.geometry.coordinates[1],
                   longitude: item.geometry.coordinates[0],
