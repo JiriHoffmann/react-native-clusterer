@@ -8,6 +8,7 @@ import { Point } from './Point';
 
 const MAP_WIDTH = Dimensions.get('window').width;
 const MAP_HEIGHT = Dimensions.get('window').height - 80;
+const MAP_DIMENSIONS = { width: MAP_WIDTH, height: MAP_HEIGHT };
 
 export const Map = () => {
   const [region, setRegion] = useState<Region>(initialRegion);
@@ -20,8 +21,8 @@ export const Map = () => {
         | supercluster.ClusterFeatureClusterer<GeoJSON.GeoJsonProperties>
     ) => {
       if (point.properties?.getClusterExpansionRegion) {
-        const region = point.properties?.getClusterExpansionRegion();
-        mapRef.current?.animateToRegion(region, 500);
+        const toRegion = point.properties?.getClusterExpansionRegion();
+        mapRef.current?.animateToRegion(toRegion, 500);
       }
     },
     [mapRef]
@@ -33,16 +34,13 @@ export const Map = () => {
         ref={mapRef}
         initialRegion={initialRegion}
         onRegionChangeComplete={setRegion}
-        style={{
-          width: MAP_WIDTH,
-          height: MAP_HEIGHT,
-        }}
+        style={MAP_DIMENSIONS}
       >
         <Clusterer
           data={parsedPlacesData}
           region={region}
           options={{ radius: 18 }}
-          mapDimensions={{ width: MAP_WIDTH, height: MAP_HEIGHT }}
+          mapDimensions={MAP_DIMENSIONS}
           renderItem={(item) => {
             return (
               <Point

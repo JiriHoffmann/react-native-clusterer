@@ -17,7 +17,80 @@ Check out the example folder for a fully functional example and speed comparison
 
 # Usage
 
-You can use this library either as a react native component ([Clusterer](#Clusterer)) for the most hassle free implementation or as a class ([Supercluster](#Supercluster)) for more fine-tuned controls. Supercluster class can be used as a drag-and-drop replacement for JS version with some caveats, check out `destroy()` method and `TO-DOs`.
+This library provides three different ways to use Supercluster based on your needs:
+
+- [**useClusterer**](#useclusterer): Hook for most hassle free implementation.
+- [**Clusterer**](#Clusterer): React Native component.
+- [**Supercluster**](#Supercluster): Class for custom functionality.
+
+If you are looking for a JS drag-and-drop replacement to speed up point clustering, you should be aware of some caveats:
+
+- Currently supported Point properties are `null`, `boolean`, `number`, `string`. The rest will be discarded when the supercluster is created. If you need to store other properties you can always turn them into a JSON.
+- The [`destroy()`](#destroy) method has to be called every time Supercluster instance is discarted. `useClusterer` and `Cluster` will take care of this for you.
+- Missing `Map/reduce` functionality.
+
+# useClusterer
+
+```js
+import { useClusterer } from 'react-native-clusterer';
+
+const MAP_DIMENSIONS =  { width: MAP_WIDTH, height: MAP_HEIGHT }
+
+//...
+const [region, setRegion] = useState(initialRegion);
+const [points, supercluster] = useClusterer(
+  markers,
+  MAP_DIMENSIONS,
+  regions
+);
+
+// ...
+return (
+  <MapView
+    onRegionChangeComplete={setRegion}
+    // ... other props
+  >
+  {points.map(point => (
+         // These should be memoized components,
+         // otherwise you might see flickering
+          <Marker
+            // ... marker props
+          >
+            {/*
+              // ... marker children - callout, custom marker, etc.
+            */}
+          </Marker>
+        );
+  )}
+    />
+  </MapView>
+);
+```
+
+## useClusterer Params
+
+### `data`
+
+Same as [points](<#load(points)>) passed to `supercluster.load()`.
+
+### `mapDimensions`
+
+Object containing `width` and `height` of the `<MapView />` Component
+
+### `region`
+
+Region from the `<MapView />` Component: Object containing `latitude`, `longitude`, `latitudeDelta` and `longitudeDelta` values.
+
+### `options`
+
+Same as [options](#Supercluster-options) for Supercluster, not required.
+
+## useClusterer Returns
+
+An array with two elements:
+
+- `points` - Array of points (`GeoJSON Feature point or cluster`). Clusters have an additional getClusterExpansionRegion() which will return a region that can be used to expand the cluster. Same as [expandCluster](<#expandCluster(clusterId)>) without the need for `clusterId` param.
+- `supercluster` - [Supercluster](#Supercluster) instance.
 
 # Clusterer
 
@@ -25,6 +98,8 @@ You can use this library either as a react native component ([Clusterer](#Cluste
 //...
 import { Clusterer } from 'react-native-clusterer';
 import MapView, { Marker } from 'react-native-maps';
+
+const MAP_DIMENSIONS =  { width: MAP_WIDTH, height: MAP_HEIGHT }
 
 // ...
 const [markers, setMarkers] = useState([]);
@@ -40,14 +115,16 @@ return (
       data={markers}
       region={region}
       options={DEFAULT_OPTIONS}
-      mapDimensions={{ width: MAP_WIDTH, height: MAP_HEIGHT }}
+      mapDimensions={MAP_DIMENSIONS}
       renderItem={(item) => {
         return (
+         // These should be memoized components,
+         // otherwise you might see flickering
            <Marker
             // ... marker props
           >
             {/*  marker children - callout, custom marker, etc. */}
-            {item.properties.cluster ? (
+            {item.properties.cluster_id ? (
               // render cluster
             ) : (
               // render marker
@@ -60,88 +137,48 @@ return (
 );
 ```
 
-## Props
-
-### `region`
-
-Region from the `<MapView />` Component. Object containing `latitude`, `longitude`, `latitudeDelta` and `longitudeDelta` values.
+## Clusterer Props
 
 ### `data`
 
-Same as [points](#load(points)) passed to `supercluster.load()`.
-
-### `options`
-
-Same as [options](#Options) for Supercluster.Optional.
+Same as [points](<#load(points)>) passed to `supercluster.load()`.
 
 ### `mapDimensions`
 
 Object containing `width` and `height` of the `<MapView />` Component
 
+### `region`
+
+Region from the `<MapView />` Component: Object containing `latitude`, `longitude`, `latitudeDelta` and `longitudeDelta` values.
+
+### `options`
+
+Same as [options](#Supercluster-Options) for Supercluster.
+
 ### `renderItem`
 
-Function that takes an item (`GeoJSON Feature point or cluster`) and returns a Marker component. `renderItem` additionally provides function getClusterExpansionRegion() inside properies for clusters (ONLY for clusters!)which will return a region that can be used to expand the cluster. Same as [expandCluster](#expandCluster(clusterId)) without the need for `clusterId` param.
+Function that takes an item (`GeoJSON Feature point or cluster`) and returns a Marker component. `renderItem` additionally provides function getClusterExpansionRegion() inside properies for clusters (ONLY for clusters!) which will return a region that can be used to expand the cluster. Same as [expandCluster](<#expandCluster(clusterId)>) without the need for `clusterId` param.
 
 # Supercluster
 
 ```js
-//...
 import Supercluster from 'react-native-clusterer';
-import MapView, { Marker } from 'react-native-maps';
-
 //...
-
-const [region, setRegion] = useState(initialRegion);
-const [clusteredMarkers, setClusteredMarkers] = useState([]);
 
 // Create a new instance of Supercluster
-// wrap in useMemo to prevent unnecessary re-renders
 const supercluster = new Supercluster(options);
 
 // Load points
-useEffect(() => {
-  supercluster.load(points);
-}, [points]);
+supercluster.load(points);
 
-// Update clusters on region change
-useEffect(() => {
-  setClusteredMarkers(
-    supercluster.getClustersFromRegion(region, mapDimensions)
-  );
-}, [region]);
+// Get clusters
+supercluster.getClustersFromRegion(region, mapDimensions);
 
-// Don't forget to clean up to free memory
-// Most likely implementation (on component unmount)
-useEffect(() => {
-  // ...
-  return () => {
-    supercluster.destroy();
-    // ...
-  };
-}, []);
-
-// ...
-return (
-  <MapView
-    onRegionChangeComplete={setRegion}
-    // ... other props
-  >
-  {clusteredMarkers.map(marker => (
-          <Marker
-            // ... marker props
-          >
-            {/*
-              // ... marker children - callout, custom marker, etc.
-            */}
-          </Marker>
-        );
-  )}
-    />
-  </MapView>
-);
+// Once you are done using the instance, call destroy() to free up memory.
+supercluster.destroy();
 ```
 
-## Options
+## Supercluster Options
 
 | Option     | Default | Description                                                       |
 | ---------- | ------- | ----------------------------------------------------------------- |
@@ -152,13 +189,11 @@ return (
 | extent     | 512     | (Tiles) Tile extent. Radius is calculated relative to this value. |
 | generateId | false   | Whether to generate ids for input features in vector tiles.       |
 
-## Methods
+## Supercluster Methods
 
 ### `load(points)`
 
 Loads an array of [GeoJSON Feature](https://tools.ietf.org/html/rfc7946#section-3.2) objects. Each feature's `geometry` must be a [GeoJSON Point](https://tools.ietf.org/html/rfc7946#section-3.1.2). Once loaded, index is immutable.
-
-Note: Currently supported Point properties are `null`, `boolean`, `number`, `string`. The rest will be discarded whent the supercluster is created. Other properties can be turned into a JSON and stored as a string.
 
 #### `getClusters(bbox, zoom)`
 
@@ -185,13 +220,13 @@ Returns all the points of a cluster (given its `clusterId`), with pagination sup
 
 Returns the zoom on which the cluster expands into several children (useful for "click to zoom" feature) given the cluster's `clusterId`.
 
-
 #### `expandCluster(clusterId)`
+
 Returns a region containing the center of all the points in a cluster and the delta value by which it should be zoomed out to see all the points. Usefull for animating a MapView after a cluster press.
 
 #### `destroy()`
 
-IMPORTANT: Since JS doesnt have destructors, we have to make sure the cluster stored in c++ memory is also deleted. This method is called automatically when the using the `<Clusterer />` compoenent. Open to any suggestions for Class implementation.
+IMPORTANT: Since JS doesnt have destructors, we have to make sure the cluster stored in c++ memory is also deleted. This method is called automatically when the using the `<Clusterer />` component. Open to any suggestions for Class implementation.
 
 ## TO-DOs
 

@@ -51,7 +51,9 @@ export const Point: FunctionComponent<Props> = memo(
     prevProps.item.properties?.point_count ===
       nextProps.item.properties?.point_count &&
     prevProps.item.properties?.onItemPress ===
-      nextProps.item.properties?.onItemPress
+      nextProps.item.properties?.onItemPress &&
+    prevProps.item.properties?.getClusterExpansionRegion ===
+      nextProps.item.properties?.getClusterExpansionRegion
 );
 
 const styles = StyleSheet.create({

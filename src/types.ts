@@ -121,7 +121,9 @@ declare namespace Supercluster {
     point_count_abbreviated: string;
   }
   type ClusterFeature<C> = PointFeature<ClusterProperties & C>;
-  type ClusterFeatureClusterer<C> = PointFeature<ClusterProperties & C> & {getClusterExpansionRegion: () => Region;};
+  type ClusterFeatureClusterer<C> = PointFeature<ClusterProperties & C> & {
+    getClusterExpansionRegion: () => Region;
+  };
   interface TileFeature<C, P> {
     type: 1;
     geometry: Array<[number, number]>;
@@ -133,3 +135,15 @@ declare namespace Supercluster {
 }
 
 export default Supercluster;
+
+export interface ClustererProps<P, C> {
+  data: Array<Supercluster.PointFeature<P>>;
+  mapDimensions: MapDimensions;
+  region: Region;
+  renderItem: (
+    cluster:
+      | Supercluster.PointFeature<P>
+      | Supercluster.ClusterFeatureClusterer<C>
+  ) => React.ReactElement;
+  options?: Supercluster.Options<P, C>;
+}

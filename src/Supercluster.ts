@@ -99,6 +99,10 @@ export default class SuperclusterClass<
     if (!this.loaded) return [];
 
     const bbox = regionToBBox(region);
+
+    if (region.longitudeDelta >= 40)
+      return clusterer.getClusters(this.id, bbox, this.options.minZoom);
+
     const viewport = GeoViewport.viewport(
       bbox,
       [mapDimensions.width, mapDimensions.height],

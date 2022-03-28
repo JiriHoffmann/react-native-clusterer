@@ -1,7 +1,3 @@
-export const getRandomNum = (min: number, max: number) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-
 export const superclusterOptions = {
   minZoom: 0,
   maxZoom: 16,
