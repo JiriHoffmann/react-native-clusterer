@@ -13,20 +13,20 @@ cd ios && pod install
 
 # Example
 
-Check out the example folder for a fully functional example and speed comparisons. An android make sure to update AndroidManifest.xml with com.google.android.geo.API_KEY meta data in order for Google Maps to work.
+Check out the example folder for a fully functional example and speed comparisons. On android make sure to update AndroidManifest.xml with com.google.android.geo.API_KEY meta data in order for Google Maps to work.
 
 # Usage
 
 This library provides three different ways to use Supercluster based on your needs:
 
-- [**useClusterer**](#useclusterer): Hook for most hassle free implementation.
+- [**useClusterer**](#useclusterer): Hook for most hassle-free implementation.
 - [**Clusterer**](#Clusterer): React Native component.
 - [**Supercluster**](#Supercluster): Class for custom functionality.
 
 If you are looking for a JS drag-and-drop replacement to speed up point clustering, you should be aware of some caveats:
 
 - Currently supported Point properties are `null`, `boolean`, `number`, `string`. The rest will be discarded when the supercluster is created. If you need to store other properties you can always turn them into a JSON.
-- The [`destroy()`](#destroy) method has to be called every time Supercluster instance is discarted. `useClusterer` and `Cluster` will take care of this for you.
+- The [`destroy()`](#destroy) method has to be called every time Supercluster instance is discarded. `useClusterer` and `Cluster` will take care of this for you.
 - Missing `Map/reduce` functionality.
 
 # useClusterer
@@ -222,11 +222,11 @@ Returns the zoom on which the cluster expands into several children (useful for 
 
 #### `expandCluster(clusterId)`
 
-Returns a region containing the center of all the points in a cluster and the delta value by which it should be zoomed out to see all the points. Usefull for animating a MapView after a cluster press.
+Returns a region containing the center of all the points in a cluster and the delta value by which it should be zoomed out to see all the points. Useful for animating a MapView after a cluster press.
 
 #### `destroy()`
 
-IMPORTANT: Since JS doesnt have destructors, we have to make sure the cluster stored in c++ memory is also deleted. This method is called automatically when the using the `<Clusterer />` component. Open to any suggestions for Class implementation.
+IMPORTANT: Since JS doesnt have destructors, we have to make sure the cluster stored in c++ memory is also deleted. This method is called automatically when using the `<Clusterer />` component. Open to any suggestions for Class implementation.
 
 ## TO-DOs
 
