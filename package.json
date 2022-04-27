@@ -56,7 +56,7 @@
   "bugs": {
     "url": "https://github.com/JiriHoffmann/react-native-clusterer/issues"
   },
-  "homepage": "https://github.com/JiriHoffmann/react-native-clusterer#readme",
+  "homepage": "https://aci.cis.gvsu.edu/2022/03/28/map-marker-clustering-in-react-native-is-now-easier",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
