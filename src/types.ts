@@ -120,10 +120,12 @@ declare namespace Supercluster {
      */
     point_count_abbreviated: string;
   }
-  type ClusterFeature<C> = PointFeature<ClusterProperties & C>;
-  type ClusterFeatureClusterer<C> = PointFeature<ClusterProperties & C> & {
+
+  interface ClusterPropertiesCluster extends ClusterProperties {
     getClusterExpansionRegion: () => Region;
-  };
+  }
+  type ClusterFeature<C> = PointFeature<ClusterProperties & C>;
+  type ClusterFeatureClusterer<C> = PointFeature<ClusterPropertiesCluster & C>;
   interface TileFeature<C, P> {
     type: 1;
     geometry: Array<[number, number]>;
