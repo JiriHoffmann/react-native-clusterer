@@ -1,23 +1,22 @@
 import { NativeModules, Platform } from 'react-native';
-import type { GeoJsonProperties } from 'geojson';
 import GeoViewport from '@mapbox/geo-viewport';
+import { getMarkersCoordinates, getMarkersRegion, regionToBBox } from './utils';
 
+import type * as GeoJSON from 'geojson';
 import type { MapDimensions, Region } from './types';
 import type Supercluster from './types';
-import { getMarkersCoordinates, getMarkersRegion, regionToBBox } from './utils';
 
 const module = NativeModules.Clusterer;
 
 if (
   module &&
   typeof module.install === 'function' &&
-  !(global as any).clustererModule
+  !(global as any).createSupercluster
 ) {
   module.install();
 }
 
-const clusterer = (global as any).clustererModule;
-
+const createSupercluster = (global as any).createSupercluster;
 const defaultOptions = {
   minZoom: 0, // min zoom to generate clusters on
   maxZoom: 16, // max zoom level to cluster the points on
@@ -33,12 +32,11 @@ export default class SuperclusterClass<
   P extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps,
   C extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps
 > {
-  private id: string;
-  private loaded: boolean = false;
+  private cppInstance: any = undefined;
   private options: Required<Supercluster.Options<P, C>>;
 
   constructor(options?: Supercluster.Options<P, C>) {
-    if (!clusterer) {
+    if (!createSupercluster) {
       throw new Error(
         `The package 'react-native-clusterer' doesn't seem to be linked. Make sure: \n\n` +
           Platform.select({
@@ -50,10 +48,6 @@ export default class SuperclusterClass<
       );
     }
 
-    // generate random id
-    this.id = `${Math.floor(
-      Math.random() * Math.floor(Math.random() * Date.now())
-    )}`;
     this.options = { ...defaultOptions, ...options };
   }
 
@@ -64,8 +58,7 @@ export default class SuperclusterClass<
    * @param points Array of GeoJSON Features, the geometries being GeoJSON Points.
    */
   load(points: Array<Supercluster.PointFeature<P>>): SuperclusterClass<P, C> {
-    this.loaded = true;
-    clusterer.load(this.id, points, this.options);
+    this.cppInstance = createSupercluster(points, this.options);
     return this;
   }
 
@@ -80,9 +73,9 @@ export default class SuperclusterClass<
     bbox: GeoJSON.BBox,
     zoom: number
   ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
-    if (!this.loaded) return [];
+    if (!this.cppInstance) return [];
 
-    return clusterer.getClusters(this.id, bbox, zoom);
+    return this.cppInstance.getClusters(bbox, zoom);
   }
 
   /**
@@ -96,12 +89,12 @@ export default class SuperclusterClass<
     region: Region,
     mapDimensions: MapDimensions
   ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
-    if (!this.loaded) return [];
+    if (!this.cppInstance) return [];
 
     const bbox = regionToBBox(region);
 
     if (region.longitudeDelta >= 40)
-      return clusterer.getClusters(this.id, bbox, this.options.minZoom);
+      return this.cppInstance.getClusters(bbox, this.options.minZoom);
 
     const viewport = GeoViewport.viewport(
       bbox,
@@ -111,7 +104,7 @@ export default class SuperclusterClass<
       512
     );
 
-    return clusterer.getClusters(this.id, bbox, viewport.zoom);
+    return this.cppInstance.getClusters(bbox, viewport.zoom);
   }
 
   /**
@@ -120,9 +113,9 @@ export default class SuperclusterClass<
    * tile object with cluster any point features.
    */
   getTile(x: number, y: number, zoom: number): Supercluster.Tile<C, P> | null {
-    if (!this.loaded) return null;
+    if (!this.cppInstance) return null;
 
-    return { features: clusterer.getTile(this.id, x, y, zoom) };
+    return { features: this.cppInstance.getTile(x, y, zoom) };
   }
 
   /**
@@ -134,9 +127,9 @@ export default class SuperclusterClass<
   getChildren(
     clusterId: number
   ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
-    if (!this.loaded) return [];
+    if (!this.cppInstance) return [];
 
-    return clusterer.getChildren(this.id, clusterId);
+    return this.cppInstance.getChildren(clusterId);
   }
 
   /**
@@ -151,9 +144,9 @@ export default class SuperclusterClass<
     limit?: number,
     offset?: number
   ): Array<Supercluster.PointFeature<P>> {
-    if (!this.loaded) return [];
+    if (!this.cppInstance) return [];
 
-    return clusterer.getLeaves(this.id, clusterId, limit ?? 10, offset ?? 0);
+    return this.cppInstance.getLeaves(clusterId, limit ?? 10, offset ?? 0);
   }
 
   /**
@@ -163,9 +156,9 @@ export default class SuperclusterClass<
    * @param clusterId Cluster ID (`cluster_id` value from feature properties).
    */
   getClusterExpansionZoom(clusterId: number): number {
-    if (!this.loaded) return 0;
+    if (!this.cppInstance) return 0;
 
-    return clusterer.getClusterExpansionZoom(this.id, clusterId);
+    return this.cppInstance.getClusterExpansionZoom(clusterId);
   }
 
   /**
@@ -175,30 +168,37 @@ export default class SuperclusterClass<
    * @param clusterId Cluster ID (`cluster_id` value from feature properties).
    */
   expandCluster = (clusterId: number): Region => {
-    if (!this.loaded)
+    if (!this.cppInstance)
       return { latitude: 0, longitude: 0, latitudeDelta: 0, longitudeDelta: 0 };
 
-    const clusterMarkersCoordinates = this.getClusterMarkers(clusterId).map(
+    const clusterMarkersCoordinates = this.getMarkersInCluster(clusterId).map(
       getMarkersCoordinates
     );
+
     return getMarkersRegion(clusterMarkersCoordinates);
   };
 
   /**
    * Destroy the instance.
+   * @deprecated Removed in 2.0.0.
    * @returns True if cluster exists and was destroyed, else false.
    */
   destroy(): boolean {
-    return clusterer.destroyCluster(this.id);
+    console.warn(
+      'React-Native-Clusterer: destroy function is no longer needed'
+    );
+    return false;
   }
 
-  private getClusterMarkers = (
+  private getMarkersInCluster = (
     clusterId: number
-  ): Array<Supercluster.PointFeature<GeoJsonProperties>> => {
+  ): Array<Supercluster.PointFeature<GeoJSON.GeoJsonProperties>> => {
     const clusterChildren = this.getChildren(clusterId);
+
     if (clusterChildren.length > 1) {
+
       return clusterChildren;
     }
-    return this.getClusterMarkers(clusterChildren[0]!.id as number);
+    return this.getMarkersInCluster(clusterChildren[0]!.id as number);
   };
 }

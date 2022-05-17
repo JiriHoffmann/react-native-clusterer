@@ -50,8 +50,6 @@ const GetTile: FunctionComponent<Props> = ({ data }) => {
     const tileRes = supercluster.getTile(0, 0, 0);
     const getTileE = PerformanceNow();
 
-    supercluster.destroy();
-
     setResult(JSON.stringify(tileRes));
     setTime([timeDelta(initS, initE), timeDelta(getTileS, getTileE)]);
   };

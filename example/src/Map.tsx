@@ -1,10 +1,12 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import { Clusterer } from 'react-native-clusterer';
-import type { supercluster } from 'react-native-clusterer';
 import MapView, { Region } from 'react-native-maps';
 import { initialRegion, parsedPlacesData } from './places';
 import { Point } from './Point';
+
+import type * as GeoJSON from 'geojson';
+import type { supercluster } from 'react-native-clusterer';
 
 const MAP_WIDTH = Dimensions.get('window').width;
 const MAP_HEIGHT = Dimensions.get('window').height - 80;

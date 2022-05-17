@@ -56,9 +56,8 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
       [westLng, southLat, eastLng, northLat],
       zoom
     );
-    const getTileE = PerformanceNow();
 
-    supercluster.destroy();
+    const getTileE = PerformanceNow();
 
     setResult(JSON.stringify(clusterRes));
     setTime([timeDelta(initS, initE), timeDelta(getTileS, getTileE)]);

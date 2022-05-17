@@ -1,19 +1,15 @@
-#ifndef REACT_NATIVE_CLUSTERER_H
-#define REACT_NATIVE_CLUSTERER_H
+#pragma once
 
-#include <jsi/jsilib.h>
 #include <jsi/jsi.h>
+#include <jsi/jsilib.h>
 
-#include "clusterer.h"
+#include "SuperclusterHostObject.h"
 
 using namespace facebook;
 using namespace std;
 
-namespace clusterer
-{
+namespace clusterer {
 
-  void install(jsi::Runtime &jsiRuntime);
-  void cleanup();
-}
-
-#endif /* REACT_NATIVE_CLUSTERER_H */
+void install(jsi::Runtime &jsiRuntime);
+void cleanup();
+} // namespace clusterer

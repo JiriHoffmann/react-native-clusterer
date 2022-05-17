@@ -1,8 +1,9 @@
 import React, { FunctionComponent, memo } from 'react';
 import { Text, StyleSheet, View } from 'react-native';
-
-import type { supercluster } from 'react-native-clusterer';
 import { Marker as MapsMarker, Callout } from 'react-native-maps';
+
+import type * as GeoJSON from 'geojson';
+import type { supercluster } from 'react-native-clusterer';
 
 type IPoint =
   | supercluster.PointFeature<GeoJSON.GeoJsonProperties>

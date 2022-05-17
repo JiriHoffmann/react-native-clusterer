@@ -1,7 +1,8 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import type Supercluster from './types';
 import type { MapDimensions, Region } from './types';
 import SuperclusterClass from './Supercluster';
+import type * as GeoJSON from 'geojson';
 
 export function useClusterer<
   P extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps,
@@ -50,11 +51,6 @@ export function useClusterer<
       mapDimensions.width,
       mapDimensions.height,
     ]
-  );
-
-  useEffect(
-    () => () => supercluster.destroy() as unknown as void,
-    [supercluster]
   );
 
   // @ts-ignore FIXME: Type
