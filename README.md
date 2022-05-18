@@ -26,7 +26,6 @@ This library provides three different ways to use Supercluster based on your nee
 If you are looking for a JS drag-and-drop replacement to speed up point clustering, you should be aware of some caveats:
 
 - Currently supported Point properties are `null`, `boolean`, `number`, `string`. The rest will be discarded when the supercluster is created. If you need to store other properties you can always turn them into a JSON.
-- The [`destroy()`](#destroy) method has to be called every time Supercluster instance is discarded. `useClusterer` and `Cluster` will take care of this for you.
 - Missing `Map/reduce` functionality.
 
 # useClusterer
@@ -173,9 +172,6 @@ supercluster.load(points);
 
 // Get clusters
 supercluster.getClustersFromRegion(region, mapDimensions);
-
-// Once you are done using the instance, call destroy() to free up memory.
-supercluster.destroy();
 ```
 
 ## Supercluster Options
@@ -226,14 +222,16 @@ Returns a region containing the center of all the points in a cluster and the de
 
 #### `destroy()`
 
-IMPORTANT: Since JS doesnt have destructors, we have to make sure the cluster stored in c++ memory is also deleted. This method is called automatically when using the `<Clusterer />` component. Open to any suggestions for Class implementation.
+No longer needed (version 1.2.0 and up).
+
+~~Since JS doesnt have destructors, we have to make sure the cluster stored in c++ memory is also deleted. This method is called automatically when using the `<Clusterer />` component.~~
 
 ## TO-DOs
 
 - [x] Proper input and return types for methods
 - [x] Implement `getClusters(bbox, zoom)`
 - [x] Parse and return additional Point properties added by users
-- [ ] Find a better implementation for `destroy()`.
+- [x] Find a better implementation for `destroy()`.
 - [ ] Map/reduce options
 
 ## Contributing
