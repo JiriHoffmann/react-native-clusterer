@@ -180,7 +180,7 @@ export default class SuperclusterClass<
 
   /**
    * Destroy the instance.
-   * @deprecated Removed in 2.0.0.
+   * @deprecated Removed in 1.2.0.
    * @returns True if cluster exists and was destroyed, else false.
    */
   destroy(): boolean {
