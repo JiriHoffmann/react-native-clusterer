@@ -54,7 +54,17 @@ if(!found) {
 
 def nodeModulesPath = nodeModulesDir.toString().replace("\\", "/")
 def reactNativePath = reactNativeDir.toString().replace("\\", "/")
-
+def buildType() {
+    def buildType = "debug"
+    
+    tasks.all({ task ->
+        if (task.name == "buildCMakeRelease") {
+            buildType = "release"
+        }
+    })
+    
+    return buildType
+}
 
 android {
   compileSdkVersion getExtOrDefault('compileSdkVersion', 28)
@@ -108,11 +118,19 @@ repositories {
   }
 }
 
+def reactProperties = new Properties()
+file("$nodeModulesPath/react-native/ReactAndroid/gradle.properties").withInputStream { reactProperties.load(it) }
+
+def reactNativeVersion = reactProperties.getProperty("VERSION_NAME").split("\\.")[1].toInteger()
+
 dependencies {
   //noinspection GradleDynamicVersion
   implementation 'com.facebook.react:react-native:+'
+  def rnMatcher = reactNativeVersion < 69
+    ? "**/**/*.aar"
+    : "**/react-native/**/*${buildType()}.aar"
 
-  def rnAAR = fileTree(reactNativePath).matching({ it.include "**/**/*.aar" }).singleFile
+  def rnAAR = fileTree(reactNativePath).matching({ it.include rnMatcher }).singleFile
   extractJNI(files(rnAAR))
 }
 
