@@ -13,7 +13,7 @@ void parseJSIFeatures(jsi::Runtime &rt,
       features.push_back(feature);
     }
   } else {
-    jsi::detail::throwJSError(rt, "Expected array of GeoJSON Feature objects");
+    throw jsi::JSError(rt, "Expected array of GeoJSON Feature objects");
   }
 };
 
@@ -27,7 +27,7 @@ void parseJSIOptions(jsi::Runtime &rt, mapbox::supercluster::Options &options,
       if (radius.isNumber()) {
         options.radius = (int)radius.asNumber();
       } else
-        jsi::detail::throwJSError(rt, "Expected number for radius");
+        throw jsi::JSError(rt, "Expected number for radius");
     }
 
     if (obj.hasProperty(rt, "minZoom")) {
@@ -35,7 +35,7 @@ void parseJSIOptions(jsi::Runtime &rt, mapbox::supercluster::Options &options,
       if (minZoom.isNumber()) {
         options.minZoom = (int)minZoom.asNumber();
       } else
-        jsi::detail::throwJSError(rt, "Expected number for minZoom");
+        throw jsi::JSError(rt, "Expected number for minZoom");
     }
 
     if (obj.hasProperty(rt, "maxZoom")) {
@@ -43,7 +43,7 @@ void parseJSIOptions(jsi::Runtime &rt, mapbox::supercluster::Options &options,
       if (maxZoom.isNumber()) {
         options.maxZoom = (int)maxZoom.asNumber();
       } else
-        jsi::detail::throwJSError(rt, "Expected number for maxZoom");
+        throw jsi::JSError(rt, "Expected number for maxZoom");
     }
 
     if (obj.hasProperty(rt, "extent")) {
@@ -51,31 +51,31 @@ void parseJSIOptions(jsi::Runtime &rt, mapbox::supercluster::Options &options,
       if (extent.isNumber()) {
         options.extent = (int)extent.asNumber();
       } else
-        jsi::detail::throwJSError(rt, "Expected number for extent");
+        throw jsi::JSError(rt, "Expected number for extent");
     }
     if (obj.hasProperty(rt, "minPoints")) {
       jsi::Value minPoints = obj.getProperty(rt, "minPoints");
       if (minPoints.isNumber()) {
         options.minPoints = (int)minPoints.asNumber();
       } else
-        jsi::detail::throwJSError(rt, "Expected number for minPoints");
+        throw jsi::JSError(rt, "Expected number for minPoints");
     }
     if (obj.hasProperty(rt, "generateId")) {
       jsi::Value generateId = obj.getProperty(rt, "generateId");
       if (generateId.isBool()) {
         options.generateId = generateId.getBool();
       } else
-        jsi::detail::throwJSError(rt, "Expected boolean for generateId");
+        throw jsi::JSError(rt, "Expected boolean for generateId");
     }
   } else
-    jsi::detail::throwJSError(rt, "Expected object for options");
+    throw jsi::JSError(rt, "Expected object for options");
 };
 
 void parseJSIFeature(jsi::Runtime &rt,
                      mapbox::feature::feature<double> &feature,
                      jsi::Value const &jsiFeature) {
   if (!jsiFeature.isObject())
-    jsi::detail::throwJSError(rt, "Expected GeoJSON Feature object");
+    throw jsi::JSError(rt, "Expected GeoJSON Feature object");
 
   jsi::Object obj = jsiFeature.asObject(rt);
 
@@ -83,39 +83,39 @@ void parseJSIFeature(jsi::Runtime &rt,
   if (!obj.hasProperty(rt, "type") ||
       !strcmp(obj.getProperty(rt, "type").asString(rt).utf8(rt).c_str(),
               "Point"))
-    jsi::detail::throwJSError(
+    throw jsi::JSError(
         rt, "Expected GeoJSON Feature object with type 'Point'");
 
   // obj.geometry
   if (!obj.hasProperty(rt, "geometry"))
-    jsi::detail::throwJSError(rt, "Expected geometry object");
+    throw jsi::JSError(rt, "Expected geometry object");
 
   jsi::Value geometry = obj.getProperty(rt, "geometry");
 
   if (!geometry.isObject())
-    jsi::detail::throwJSError(rt, "Expected geometry object");
+    throw jsi::JSError(rt, "Expected geometry object");
 
   jsi::Object geoObj = geometry.asObject(rt);
 
   // obj.geometry.coordinates
   if (!geoObj.hasProperty(rt, "coordinates"))
-    jsi::detail::throwJSError(rt, "Expected coordinates property");
+    throw jsi::JSError(rt, "Expected coordinates property");
 
   jsi::Value coordinates = geoObj.getProperty(rt, "coordinates");
 
   if (!coordinates.asObject(rt).isArray(rt))
-    jsi::detail::throwJSError(rt, "Expected array for coordinates");
+    throw jsi::JSError(rt, "Expected array for coordinates");
 
   jsi::Array arr = coordinates.asObject(rt).asArray(rt);
 
   if (arr.size(rt) != 2)
-    jsi::detail::throwJSError(rt, "Expected array of size 2 for coordinates");
+    throw jsi::JSError(rt, "Expected array of size 2 for coordinates");
 
   jsi::Value x = arr.getValueAtIndex(rt, 0);
   jsi::Value y = arr.getValueAtIndex(rt, 1);
 
   if (!x.isNumber() || !y.isNumber())
-    jsi::detail::throwJSError(rt, "Expected number for coordinates");
+    throw jsi::JSError(rt, "Expected number for coordinates");
 
   double lng = x.asNumber();
   double lat = y.asNumber();

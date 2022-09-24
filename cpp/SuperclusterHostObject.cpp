@@ -21,7 +21,7 @@ SuperclusterHostObject::SuperclusterHostObject(jsi::Runtime &rt,
     std::string message =
         std::string("React-Native-Clusterer: Error creating Supercluser") +
         e.what();
-    jsi::detail::throwJSError(rt, message.c_str());
+    throw jsi::JSError(rt, message.c_str());
   }
 }
 
@@ -52,7 +52,7 @@ jsi::Value SuperclusterHostObject::get(jsi::Runtime &runtime,
                const jsi::Value *args, size_t count) -> jsi::Value {
           if (count != 3 || !args[0].isNumber() || !args[1].isNumber() ||
               !args[2].isNumber())
-            jsi::detail::throwJSError(rt, "React-Native-Clusterer: getTile "
+            throw jsi::JSError(rt, "React-Native-Clusterer: getTile "
                                           "expects 3 numbers as arguments");
 
           int zoom = (int)args[0].asNumber();
@@ -81,7 +81,7 @@ jsi::Value SuperclusterHostObject::get(jsi::Runtime &runtime,
                const jsi::Value *args, size_t count) -> jsi::Value {
           if (count != 2 || !args[0].asObject(rt).isArray(rt) ||
               !args[1].isNumber())
-            jsi::detail::throwJSError(rt, "React-Native-Clusterer: getClusters "
+            throw jsi::JSError(rt, "React-Native-Clusterer: getClusters "
                                           "expects an array and a number");
 
           double bbox[4];
@@ -93,7 +93,7 @@ jsi::Value SuperclusterHostObject::get(jsi::Runtime &runtime,
             bbox[2] = jsibbox.getValueAtIndex(rt, 2).asNumber();
             bbox[3] = jsibbox.getValueAtIndex(rt, 3).asNumber();
           } catch (exception &e) {
-            jsi::detail::throwJSError(
+            throw jsi::JSError(
                 rt, "React-Native-Clusterer: GetClusters error, make sure "
                     "boundingBox is an array of 4 numbers");
           }
@@ -121,7 +121,7 @@ jsi::Value SuperclusterHostObject::get(jsi::Runtime &runtime,
         [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                const jsi::Value *args, size_t count) -> jsi::Value {
           if (count != 1 || !args[0].isNumber())
-            jsi::detail::throwJSError(rt, "React-Native-Clusterer: getChildren "
+            throw jsi::JSError(rt, "React-Native-Clusterer: getChildren "
                                           "expects a number for cluster_id");
 
           auto cluster_id = (int)args[0].asNumber();
@@ -146,20 +146,20 @@ jsi::Value SuperclusterHostObject::get(jsi::Runtime &runtime,
         [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                const jsi::Value *args, size_t count) -> jsi::Value {
           if (count < 1 || count > 3)
-            jsi::detail::throwJSError(rt,
+            throw jsi::JSError(rt,
                                       "React-Native-Clusterer: getLeaves "
                                       "expects at least 1 argument, at most 3");
 
           if (!args[0].isNumber())
-            jsi::detail::throwJSError(rt, "React-Native-Clusterer: getLeaves "
+            throw jsi::JSError(rt, "React-Native-Clusterer: getLeaves "
                                           "first argument must be a number");
 
           if (count >= 2 && !args[1].isNumber())
-            jsi::detail::throwJSError(rt, "React-Native-Clusterer: getLeaves "
+            throw jsi::JSError(rt, "React-Native-Clusterer: getLeaves "
                                           "second argument must be a number");
 
           if (count == 3 && !args[2].isNumber())
-            jsi::detail::throwJSError(rt, "React-Native-Clusterer: getLeaves "
+            throw jsi::JSError(rt, "React-Native-Clusterer: getLeaves "
                                           "third argument must be a number");
 
           auto cluster_id = (int)args[0].asNumber();
@@ -188,7 +188,7 @@ jsi::Value SuperclusterHostObject::get(jsi::Runtime &runtime,
         [this](jsi::Runtime &rt, const jsi::Value &thisVal,
                const jsi::Value *args, size_t count) -> jsi::Value {
           if (count != 1 || !args[0].isNumber())
-            jsi::detail::throwJSError(
+            throw jsi::JSError(
                 rt, "React-Native-Clusterer: getClusterExpansionZoom expects "
                     "number for cluster_id");
 
