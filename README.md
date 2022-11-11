@@ -40,7 +40,7 @@ const [region, setRegion] = useState(initialRegion);
 const [points, supercluster] = useClusterer(
   markers,
   MAP_DIMENSIONS,
-  regions
+  region
 );
 
 // ...
