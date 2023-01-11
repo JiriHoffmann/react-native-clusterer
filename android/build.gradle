@@ -3,81 +3,75 @@ import java.nio.file.Paths
 buildscript {
 
   repositories {
-    google()
-    jcenter()
-    mavenCentral()
-
     maven {
       url "https://plugins.gradle.org/m2/"
     }
+    mavenCentral()
+    google()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:4.2.2'
+    classpath 'com.android.tools.build:gradle:7.2.2'
   }
 }
 
-apply plugin: 'com.android.library'
-
-def getExtOrDefault(name, defaultValue) {
-  return rootProject.ext.has(name) ? rootProject.ext.get(name) : defaultValue
-}
-
-def found = false
-def basePath = projectDir.toPath().normalize()
-
-// Find node_modules inside the example project
-def nodeModulesDir = Paths.get(basePath.getParent().toString(), "example/node_modules")
-def reactNativeDir = Paths.get(nodeModulesDir.toString(), "react-native/android")
-if (nodeModulesDir.toFile().exists() && reactNativeDir.toFile().exists()) {
-  found = true
-}
-
-if(!found){
+static def findNodeModulePath(baseDir, packageName) {
+  def basePath = baseDir.toPath().normalize()
   // Node's module resolution algorithm searches up to the root directory,
   // after which the base path will be null
   while (basePath) {
-    nodeModulesDir = Paths.get(basePath.toString(), "node_modules")
-    reactNativeDir = Paths.get(nodeModulesDir.toString(), "react-native/android")
-    if (nodeModulesDir.toFile().exists() && reactNativeDir.toFile().exists()) {
-      found = true
-      break;
+    def candidatePath = Paths.get(basePath.toString(), "node_modules", packageName)
+    if (candidatePath.toFile().exists()) {
+      return candidatePath.toString()
     }
     basePath = basePath.getParent()
   }
+  return null
 }
 
-if(!found) {
-    throw new GradleException(
-            "${project.name}: unable to locate React Native android sources. " +
-                    "Ensure you have you installed React Native as a dependency in your project and try again.")
+def findNodeModulePath(packageName) {
+  // Don't start in the project dir, as its path ends with node_modules/react-native-gesture-handler/android
+  // we want to go two levels up, so we end up in the first_node modules and eventually
+  // search upwards if the package is not found there
+  return findNodeModulePath(projectDir.toPath().parent.parent.toFile(), packageName)
 }
 
-def nodeModulesPath = nodeModulesDir.toString().replace("\\", "/")
-def reactNativePath = reactNativeDir.toString().replace("\\", "/")
-def buildType() {
-    def buildType = "debug"
-    
-    tasks.all({ task ->
-        if (task.name == "buildCMakeRelease") {
-            buildType = "release"
-        }
-    })
-    
-    return buildType
+apply plugin: 'com.facebook.react'
+apply plugin: 'com.android.library'
+
+def safeExtGet(prop, fallback) {
+  rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+def reactNativeArchitectures() {
+  def value = project.getProperties().get("reactNativeArchitectures")
+  return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+}
+
+def REACT_NATIVE_DIR = findNodeModulePath("react-native")
+
+repositories {
+  mavenCentral()
 }
 
 android {
-  compileSdkVersion getExtOrDefault('compileSdkVersion', 28)
+  compileSdkVersion safeExtGet("compileSdkVersion", 28)
+
+  buildFeatures {
+    prefab true
+  }
 
   defaultConfig {
-    minSdkVersion getExtOrDefault('minSdkVersion', 16)
-    targetSdkVersion getExtOrDefault('targetSdkVersion', 28)
+    minSdkVersion safeExtGet('minSdkVersion', 16)
+    targetSdkVersion safeExtGet('targetSdkVersion', 28)
 
+    var appProject = rootProject.allprojects.find {it.plugins.hasPlugin('com.android.application')}
     externalNativeBuild {
       cmake {
-        cppFlags "-fexceptions", "-frtti", "-std=c++1y", "-DONANDROID"
-        abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
-        arguments '-DANDROID_STL=c++_shared', "-DNODE_MODULES_DIR=${nodeModulesPath}"
+        cppFlags "-O2 -frtti -fexceptions -Wall -Wno-unused-variable -fstack-protector-all"
+        arguments "-DAPP_BUILD_DIR=${appProject.buildDir}",
+                "-DREACT_NATIVE_DIR=${REACT_NATIVE_DIR}",
+                "-DANDROID_STL=c++_shared"
+        abiFilters (*reactNativeArchitectures())
       }
     }
   }
@@ -87,71 +81,29 @@ android {
     targetCompatibility JavaVersion.VERSION_1_8
   }
 
-  lintOptions{
-    abortOnError false
-    disable 'GradleCompatible'
-  }
-
   externalNativeBuild {
      cmake {
           path "./CMakeLists.txt"
       }
   }
-
-  packagingOptions {
-    excludes = ["**/libc++_shared.so","**/libjsi.so","**/libreactnativejni.so","META-INF/MANIFEST.MF"]
-  }
-
-  configurations {
-    extractJNI
-  }
 }
-
-repositories {
-  mavenCentral()
-  mavenLocal()
-  google()
-
-  maven {
-    url reactNativePath
-    name 'React Native sources'
-  }
-}
-
-def reactProperties = new Properties()
-file("$nodeModulesPath/react-native/ReactAndroid/gradle.properties").withInputStream { reactProperties.load(it) }
-
-def reactNativeVersion = reactProperties.getProperty("VERSION_NAME").split("\\.")[1].toInteger()
 
 dependencies {
   //noinspection GradleDynamicVersion
   implementation 'com.facebook.react:react-native:+'
-  def rnMatcher = reactNativeVersion < 69
-    ? "**/**/*.aar"
-    : "**/react-native/**/*${buildType()}.aar"
-
-  def rnAAR = fileTree(reactNativePath).matching({ it.include rnMatcher }).singleFile
-  extractJNI(files(rnAAR))
 }
 
-def extracted = false;
-task extractJNIFiles {
-  if (extracted) return
-  doLast {
-    configurations.extractJNI.files.each {
-      def file = it.absoluteFile
-
-      copy {
-        from zipTree(file)
-        into "$buildDir/$file.name"
-        include "jni/**/*"
-      }
-      extracted = true;
+// Resolves "LOCAL_SRC_FILES points to a missing file, Check that libfb.so exists or that its path is correct".
+tasks.whenTaskAdded { task ->
+  if (task.name.contains("configureCMakeDebug")) {
+    rootProject.getTasksByName("packageReactNdkDebugLibs", true).forEach {
+      task.dependsOn(it)
     }
   }
-}
-
-// Extract JNI files as soon as first task is added
-tasks.whenTaskAdded { task ->
-  task.dependsOn(extractJNIFiles);
+  // We want to add a dependency for both configureCMakeRelease and configureCMakeRelWithDebInfo
+  if (task.name.contains("configureCMakeRel")) {
+    rootProject.getTasksByName("packageReactNdkReleaseLibs", true).forEach {
+      task.dependsOn(it)
+    }
+  }
 }
