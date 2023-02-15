@@ -35,7 +35,9 @@ def findNodeModulePath(packageName) {
   return findNodeModulePath(projectDir.toPath().parent.parent.toFile(), packageName)
 }
 
-apply plugin: 'com.facebook.react'
+if (isNewArchitectureEnabled()) {
+  apply plugin: 'com.facebook.react'
+}
 apply plugin: 'com.android.library'
 
 def safeExtGet(prop, fallback) {
