@@ -1,6 +1,7 @@
 #pragma once
 
 #include <jsi/jsi.h>
+
 #include <map>
 
 #include "supercluster.hpp"
@@ -10,27 +11,24 @@ using namespace facebook;
 
 namespace clusterer {
 
-void parseJSIFeatures(jsi::Runtime &rt,
-                      mapbox::feature::feature_collection<double> &features,
-                      jsi::Value const &jsiFeatures);
-
 void parseJSIOptions(jsi::Runtime &rt, mapbox::supercluster::Options &options,
                      jsi::Value const &jsiOptions);
 
-void parseJSIFeature(jsi::Runtime &rt,
+void parseJSIFeature(jsi::Runtime &rt, int featureIndex,
                      mapbox::feature::feature<double> &feature,
                      jsi::Value const &jsiFeature);
 
 void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
-                  mapbox::feature::feature<double> &f);
+                  mapbox::feature::feature<double> &f,
+                  jsi::Array &featuresInput);
 
 void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
-                  mapbox::feature::feature<std::int16_t> &f);
+                  mapbox::feature::feature<std::int16_t> &f,
+                  jsi::Array &featuresInput);
 
-void propertiesToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
-                     mapbox::feature::feature<double> &f);
+void featureToJSIProperty(
+    jsi::Runtime &rt, jsi::Object &jsiPropertyObject,
+    std::__1::pair<const std::__1::string, mapbox::feature::value> &itr,
+    int &origFeatureIndex);
 
-void propertiesToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
-                     mapbox::feature::feature<std::int16_t> &f);
-
-} // namespace clusterer
+}  // namespace clusterer

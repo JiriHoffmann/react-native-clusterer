@@ -25,7 +25,6 @@ This library provides three different ways to use Supercluster based on your nee
 
 If you are looking for a JS drag-and-drop replacement to speed up point clustering, you should be aware of some caveats:
 
-- Currently supported Point properties are `null`, `boolean`, `number`, `string`. The rest will be discarded when the supercluster is created. If you need to store other properties you can always turn them into a JSON.
 - Missing `Map/reduce` functionality.
 
 # useClusterer

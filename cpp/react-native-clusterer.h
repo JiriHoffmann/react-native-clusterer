@@ -12,4 +12,4 @@ namespace clusterer {
 
 void install(jsi::Runtime &jsiRuntime);
 void cleanup();
-} // namespace clusterer
+}  // namespace clusterer

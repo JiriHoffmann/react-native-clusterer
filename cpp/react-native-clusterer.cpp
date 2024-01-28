@@ -2,7 +2,6 @@
 
 namespace clusterer {
 void install(jsi::Runtime &jsiRuntime) {
-
   auto createSupercluster = jsi::Function::createFromHostFunction(
       jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "createSupercluster"),
       2,
@@ -16,4 +15,4 @@ void install(jsi::Runtime &jsiRuntime) {
   jsiRuntime.global().setProperty(jsiRuntime, "createSupercluster",
                                   std::move(createSupercluster));
 }
-} // namespace clusterer
+}  // namespace clusterer
