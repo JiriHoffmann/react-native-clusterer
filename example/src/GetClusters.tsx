@@ -12,55 +12,59 @@ import {
 } from 'react-native';
 import { PerformanceNow, superclusterOptions, timeDelta } from './utils';
 import Supercluster from 'react-native-clusterer';
-import { default as SuperclusterJS } from 'supercluster';
+import SuperclusterJS from 'supercluster';
 
+type BBox = [number, number, number, number];
 interface Props {
-  data: any;
+  data: supercluster.PointFeature<any>[];
 }
 
 const GetClusters: FunctionComponent<Props> = ({ data }) => {
-  const [westLng, setWestLng] = useState(-180);
-  const [southLat, setSouthLat] = useState(-90);
-  const [eastLng, setEastLng] = useState(180);
-  const [northLat, setNorthLat] = useState(90);
-  const [zoom, setZoom] = useState(1);
+  const [westLng, setWestLng] = useState('-180');
+  const [southLat, setSouthLat] = useState('-90');
+  const [eastLng, setEastLng] = useState('180');
+  const [northLat, setNorthLat] = useState('90');
+  const [zoom, setZoom] = useState('1');
+
+  const zoomInt = parseInt(zoom);
+  const bbox = [westLng, southLat, eastLng, northLat].map(parseFloat) as BBox;
 
   const [time, setTime] = useState<string[]>(['0', '0']);
   const [result, setResult] = useState<string>('');
 
   const _handleRunJS = () => {
-    const initS = PerformanceNow();
+    if (bbox.some(isNaN)) return console.warn('Invalid input', bbox);
+    if (isNaN(zoomInt)) return console.warn('Invalid input', zoomInt);
+
+    const start = PerformanceNow();
     const superclusterJS = new SuperclusterJS(superclusterOptions);
     superclusterJS.load(data);
-    const initE = PerformanceNow();
+    const end = PerformanceNow();
 
     const getTileS = PerformanceNow();
-    const clusterRes = superclusterJS.getClusters(
-      [westLng, southLat, eastLng, northLat],
-      zoom
-    );
+    const clusterRes = superclusterJS.getClusters(bbox, zoomInt);
     const getTileE = PerformanceNow();
 
     setResult(JSON.stringify(clusterRes));
-    setTime([timeDelta(initS, initE), timeDelta(getTileS, getTileE)]);
+    setTime([timeDelta(start, end), timeDelta(getTileS, getTileE)]);
   };
 
   const _handleRunCPP = () => {
-    const initS = PerformanceNow();
+    if (bbox.some(isNaN)) return console.warn('Invalid input', bbox);
+    if (isNaN(zoomInt)) return console.warn('Invalid input', zoomInt);
+
+    const start = PerformanceNow();
     const supercluster = new Supercluster(superclusterOptions);
     supercluster.load(data);
-    const initE = PerformanceNow();
+    const end = PerformanceNow();
 
     const getTileS = PerformanceNow();
-    const clusterRes = supercluster.getClusters(
-      [westLng, southLat, eastLng, northLat],
-      zoom
-    );
+    const clusterRes = supercluster.getClusters(bbox, zoomInt);
 
     const getTileE = PerformanceNow();
 
     setResult(JSON.stringify(clusterRes));
-    setTime([timeDelta(initS, initE), timeDelta(getTileS, getTileE)]);
+    setTime([timeDelta(start, end), timeDelta(getTileS, getTileE)]);
   };
 
   return (
@@ -76,7 +80,7 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
         <TextInput
           style={styles.flexInput}
           placeholder="0"
-          onChangeText={(t) => setWestLng(t as any)}
+          onChangeText={setWestLng}
           keyboardType={'number-pad'}
           value={`${westLng}`}
           multiline={false}
@@ -84,7 +88,7 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
         <TextInput
           style={styles.flexInput}
           placeholder="0"
-          onChangeText={(t) => setSouthLat(t as any)}
+          onChangeText={setSouthLat}
           keyboardType={'number-pad'}
           value={`${southLat}`}
           multiline={false}
@@ -92,7 +96,7 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
         <TextInput
           style={styles.flexInput}
           placeholder="0"
-          onChangeText={(t) => setEastLng(t as any)}
+          onChangeText={setEastLng}
           keyboardType={'number-pad'}
           value={`${eastLng}`}
           multiline={false}
@@ -100,7 +104,7 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
         <TextInput
           style={styles.flexInput}
           placeholder="0"
-          onChangeText={(t) => setNorthLat(t as any)}
+          onChangeText={setNorthLat}
           keyboardType={'number-pad'}
           value={`${northLat}`}
           multiline={false}
@@ -108,7 +112,7 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
         <TextInput
           style={styles.flexInput}
           placeholder="0"
-          onChangeText={(t) => setZoom(t as any)}
+          onChangeText={setZoom}
           keyboardType={'number-pad'}
           value={`${zoom}`}
           multiline={false}

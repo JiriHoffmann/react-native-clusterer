@@ -7,27 +7,27 @@ export const initialRegion = {
   longitudeDelta: 72.32146382331848,
 };
 
-export const parsedPlacesData = (JSON.parse(placesJSON).features as any[]).map(
-  (f, i) => ({
-    ...f,
-    properties: { ...f.properties, id: i },
-  })
-);
+export const parsedPlacesData: supercluster.PointFeature<any>[] = (
+  JSON.parse(placesJSON).features as any[]
+).map((f, i) => ({
+  ...f,
+  properties: { ...f.properties, id: i },
+}));
 
 export const getRandomNum = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-export const getRandomData = (size: number) => {
-  return Array.from({ length: size }, () => {
+export const getRandomData = (size: number | string) => {
+  return Array.from({ length: parseInt(`${size}`) }, (_, i) => {
     return {
-      type: 'Feature' as 'Feature',
+      type: 'Feature' as const,
       geometry: {
-        type: 'Point' as 'Point',
+        type: 'Point' as const,
         coordinates: [getRandomNum(-180, 180), getRandomNum(-90, 90)],
       },
       properties: {
-        id: `${size / getRandomNum(1, size)}-${getRandomNum(0, size * 10)}`,
+        id: `point-${i}`,
       },
     };
   });

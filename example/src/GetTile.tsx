@@ -15,43 +15,53 @@ import Supercluster from 'react-native-clusterer';
 import { default as SuperclusterJS } from 'supercluster';
 
 interface Props {
-  data: any;
+  data: supercluster.PointFeature<any>[];
 }
 
 const GetTile: FunctionComponent<Props> = ({ data }) => {
-  const [x, setX] = useState(0);
-  const [y, setY] = useState(0);
-  const [z, setZ] = useState(0);
+  const [x, setX] = useState('0');
+  const [y, setY] = useState('0');
+  const [z, setZ] = useState('0');
+
+  const xInt = parseInt(x);
+  const yInt = parseInt(y);
+  const zInt = parseInt(z);
 
   const [time, setTime] = useState<string[]>(['0', '0']);
   const [result, setResult] = useState<string>('');
 
   const _handleRunJS = () => {
-    const initS = PerformanceNow();
+    if (isNaN(xInt) || isNaN(yInt) || isNaN(zInt))
+      return console.warn('Invalid input', xInt, yInt, zInt);
+
+    const start = PerformanceNow();
     const superclusterJS = new SuperclusterJS(superclusterOptions);
     superclusterJS.load(data);
-    const initE = PerformanceNow();
+    const end = PerformanceNow();
 
     const getTileS = PerformanceNow();
-    const tileRes = superclusterJS.getTile(x, y, z);
+    const tileRes = superclusterJS.getTile(xInt, yInt, zInt);
     const getTileE = PerformanceNow();
 
     setResult(JSON.stringify(tileRes));
-    setTime([timeDelta(initS, initE), timeDelta(getTileS, getTileE)]);
+    setTime([timeDelta(start, end), timeDelta(getTileS, getTileE)]);
   };
 
   const _handleRunCPP = () => {
-    const initS = PerformanceNow();
+    if (isNaN(xInt) || isNaN(yInt) || isNaN(zInt))
+      return console.warn('Invalid input', xInt, yInt, zInt);
+
+    const start = PerformanceNow();
     const supercluster = new Supercluster(superclusterOptions);
     supercluster.load(data);
-    const initE = PerformanceNow();
+    const end = PerformanceNow();
 
     const getTileS = PerformanceNow();
-    const tileRes = supercluster.getTile(0, 0, 0);
+    const tileRes = supercluster.getTile(xInt, yInt, zInt);
     const getTileE = PerformanceNow();
 
     setResult(JSON.stringify(tileRes));
-    setTime([timeDelta(initS, initE), timeDelta(getTileS, getTileE)]);
+    setTime([timeDelta(start, end), timeDelta(getTileS, getTileE)]);
   };
 
   return (
@@ -65,7 +75,7 @@ const GetTile: FunctionComponent<Props> = ({ data }) => {
         <TextInput
           style={styles.flexInput}
           placeholder="0"
-          onChangeText={(t) => setX(t as any)}
+          onChangeText={setX}
           keyboardType={'number-pad'}
           value={`${x}`}
           multiline={false}
@@ -73,7 +83,7 @@ const GetTile: FunctionComponent<Props> = ({ data }) => {
         <TextInput
           style={styles.flexInput}
           placeholder="0"
-          onChangeText={(t) => setY(t as any)}
+          onChangeText={setY}
           keyboardType={'number-pad'}
           value={`${y}`}
           multiline={false}
@@ -81,7 +91,7 @@ const GetTile: FunctionComponent<Props> = ({ data }) => {
         <TextInput
           style={styles.flexInput}
           placeholder="0"
-          onChangeText={(t) => setZ(t as any)}
+          onChangeText={setZ}
           keyboardType={'number-pad'}
           value={`${z}`}
           multiline={false}

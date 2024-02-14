@@ -11,10 +11,12 @@ import { getRandomData, parsedPlacesData } from './places';
 import { GetTile } from './GetTile';
 import { GetClusters } from './GetClusters';
 
-const DEFAULT_SIZE = 1000;
+const DEFAULT_SIZE = '1000';
 
 export const Comparison: FunctionComponent<{}> = () => {
-  const [data, setData] = useState<any[]>(getRandomData(DEFAULT_SIZE));
+  const [data, setData] = useState<supercluster.PointFeature<any>[]>(
+    getRandomData(DEFAULT_SIZE)
+  );
   const [dataSizeInput, setDataSizeInput] = useState(DEFAULT_SIZE);
   const [showType, setType] = useState<null | 'tile' | 'cluster'>(null);
 
