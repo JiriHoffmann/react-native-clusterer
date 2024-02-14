@@ -1,4 +1,5 @@
 import type { Feature, Point } from 'geojson';
+import type Supercluster from './types';
 import type { BBox, LatLng, Region } from './types';
 
 const calculateDelta = (x: number, y: number): number =>
@@ -58,4 +59,14 @@ export const getMarkersRegion = (points: LatLng[]): Region => {
 export const getMarkersCoordinates = (markers: Feature<Point>) => {
   const [longitude, latitude] = markers.geometry.coordinates;
   return { longitude, latitude };
+};
+
+/**
+ * Determines if a point is a cluster for `.properties` typesafe accessiblity
+ * @param point ClusterFeature or PointFeature
+ */
+export const isPointCluster = <P, C>(
+  point: Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>
+): point is Supercluster.ClusterFeature<C> => {
+  return 'properties' in point && 'cluster' in (point.properties as any);
 };

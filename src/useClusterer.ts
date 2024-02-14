@@ -3,6 +3,7 @@ import type Supercluster from './types';
 import type { MapDimensions, Region } from './types';
 import SuperclusterClass from './Supercluster';
 import type * as GeoJSON from 'geojson';
+import { isPointCluster } from './utils';
 
 export function useClusterer<
   P extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps,
@@ -31,16 +32,11 @@ export function useClusterer<
   const points = useMemo(
     () =>
       supercluster.getClustersFromRegion(region, mapDimensions).map((c) => {
-        const cid = c?.properties?.cluster_id;
-        if (!cid) return c;
-
-        return {
-          ...c,
-          properties: {
-            ...c.properties,
-            getClusterExpansionRegion: () => supercluster.expandCluster(cid),
-          },
-        };
+        if (isPointCluster(c)) {
+          c.properties.getClusterExpansionRegion = () =>
+            supercluster.expandCluster(c.properties.cluster_id);
+        }
+        return c;
       }),
     [
       supercluster,
