@@ -44,7 +44,7 @@ export default class SuperclusterClass<
             default: '',
           }) +
           '- You rebuilt the app after installing the package\n' +
-          '- You are not using Expo managed workflow\n'
+          '- You are not using Expo Go, but an Expo development client instead\n'
       );
     }
 
