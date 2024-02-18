@@ -2,16 +2,13 @@ import React, { FunctionComponent, memo } from 'react';
 import { Text, StyleSheet, View } from 'react-native';
 import { Marker as MapsMarker, Callout } from 'react-native-maps';
 
-import type * as GeoJSON from 'geojson';
 import type { supercluster } from 'react-native-clusterer';
 
-type IPoint =
-  | supercluster.PointFeature<GeoJSON.GeoJsonProperties>
-  | supercluster.ClusterFeatureClusterer<GeoJSON.GeoJsonProperties>;
+type IFeature = supercluster.PointOrClusterFeature<any, any>;
 
 interface Props {
-  item: IPoint;
-  onPress: (item: IPoint) => void;
+  item: IFeature;
+  onPress: (item: IFeature) => void;
 }
 
 export const Point: FunctionComponent<Props> = memo(
@@ -53,8 +50,8 @@ export const Point: FunctionComponent<Props> = memo(
       nextProps.item.properties?.point_count &&
     prevProps.item.properties?.onItemPress ===
       nextProps.item.properties?.onItemPress &&
-    prevProps.item.properties?.getClusterExpansionRegion ===
-      nextProps.item.properties?.getClusterExpansionRegion
+    prevProps.item.properties?.getExpansionRegion ===
+      nextProps.item.properties?.getExpansionRegion
 );
 
 const styles = StyleSheet.create({

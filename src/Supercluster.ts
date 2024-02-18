@@ -75,7 +75,9 @@ export default class SuperclusterClass<
   ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
     if (!this.cppInstance) return [];
 
-    return this.cppInstance.getClusters(bbox, zoom);
+    return this.cppInstance
+      .getClusters(bbox, zoom)
+      .map(this.addExpansionRegionToCluster);
   }
 
   /**
@@ -94,7 +96,9 @@ export default class SuperclusterClass<
     const bbox = regionToBBox(region);
 
     if (region.longitudeDelta >= 40)
-      return this.cppInstance.getClusters(bbox, this.options.minZoom);
+      return this.cppInstance
+        .getClusters(bbox, this.options.minZoom)
+        .map(this.addExpansionRegionToCluster);
 
     const viewport = GeoViewport.viewport(
       bbox,
@@ -104,7 +108,9 @@ export default class SuperclusterClass<
       512
     );
 
-    return this.cppInstance.getClusters(bbox, viewport.zoom);
+    return this.cppInstance
+      .getClusters(bbox, viewport.zoom)
+      .map(this.addExpansionRegionToCluster);
   }
 
   /**
@@ -167,7 +173,7 @@ export default class SuperclusterClass<
    * (usefull for animating a MapView after a cluster press).
    * @param clusterId Cluster ID (`cluster_id` value from feature properties).
    */
-  expandCluster = (clusterId: number): Region => {
+  getClusterExpansionRegion = (clusterId: number): Region => {
     if (!this.cppInstance)
       return { latitude: 0, longitude: 0, latitudeDelta: 0, longitudeDelta: 0 };
 
@@ -196,9 +202,20 @@ export default class SuperclusterClass<
     const clusterChildren = this.getChildren(clusterId);
 
     if (clusterChildren.length > 1) {
-
       return clusterChildren;
     }
     return this.getMarkersInCluster(clusterChildren[0]!.id as number);
+  };
+
+  private addExpansionRegionToCluster = (
+    feature: Supercluster.PointFeature<P> | Supercluster.ClusterFeatureBase<C>
+  ) => {
+    if (feature.properties?.cluster_id) {
+      (
+        feature as Supercluster.ClusterFeature<C>
+      ).properties.getExpansionRegion = () =>
+        this.getClusterExpansionRegion(feature.properties!.cluster_id);
+    }
+    return feature;
   };
 }

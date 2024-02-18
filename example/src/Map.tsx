@@ -1,12 +1,13 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import { Clusterer } from 'react-native-clusterer';
+import { Clusterer, isPointCluster } from 'react-native-clusterer';
 import MapView, { Region } from 'react-native-maps';
 import { initialRegion, parsedPlacesData } from './places';
 import { Point } from './Point';
 
-import type * as GeoJSON from 'geojson';
 import type { supercluster } from 'react-native-clusterer';
+
+type IFeature = supercluster.PointOrClusterFeature<any, any>;
 
 const MAP_WIDTH = Dimensions.get('window').width;
 const MAP_HEIGHT = Dimensions.get('window').height - 80;
@@ -16,19 +17,12 @@ export const Map = () => {
   const [region, setRegion] = useState<Region>(initialRegion);
   const mapRef = useRef<MapView>(null);
 
-  const _handlePointPress = useCallback(
-    (
-      point:
-        | supercluster.PointFeature<GeoJSON.GeoJsonProperties>
-        | supercluster.ClusterFeatureClusterer<GeoJSON.GeoJsonProperties>
-    ) => {
-      if (point.properties?.getClusterExpansionRegion) {
-        const toRegion = point.properties?.getClusterExpansionRegion();
-        mapRef.current?.animateToRegion(toRegion, 500);
-      }
-    },
-    [mapRef]
-  );
+  const _handlePointPress = (point: IFeature) => {
+    if (isPointCluster(point)) {
+      const toRegion = point.properties.getExpansionRegion();
+      mapRef.current?.animateToRegion(toRegion, 500);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -47,7 +41,9 @@ export const Map = () => {
             return (
               <Point
                 key={
-                  item.properties?.cluster_id ?? `point-${item.properties?.id}`
+                  isPointCluster(item)
+                    ? `cluster-${item.properties.cluster_id}`
+                    : `point-${item.properties.id}`
                 }
                 item={item}
                 onPress={_handlePointPress}
