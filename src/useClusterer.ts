@@ -35,6 +35,7 @@ export function useClusterer<
         if (isPointCluster(c)) {
           c.properties.getClusterExpansionRegion = () =>
             supercluster.expandCluster(c.properties.cluster_id);
+          return c as Supercluster.ClusterFeatureClusterer<C>;
         }
         return c;
       }),
@@ -49,6 +50,5 @@ export function useClusterer<
     ]
   );
 
-  // @ts-ignore FIXME: Type
   return [points, supercluster];
 }
