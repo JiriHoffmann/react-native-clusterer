@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { PerformanceNow, superclusterOptions, timeDelta } from './utils';
 import Supercluster from 'react-native-clusterer';
-import { default as SuperclusterJS } from 'supercluster';
+import SuperclusterJS from 'supercluster';
 
 interface Props {
   data: supercluster.PointFeature<any>[];
