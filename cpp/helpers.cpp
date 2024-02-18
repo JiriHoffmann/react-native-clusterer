@@ -125,7 +125,7 @@ void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
   jsi::Object properties = jsi::Object(rt);
   int origFeatureIndex = -1;
   for(auto &itr : f.properties) {
-    featureToJSIProperty(rt, properties, itr, origFeatureIndex);
+    propertiesToJSI(rt, properties, itr, origFeatureIndex);
   }
 
   if(origFeatureIndex != -1) {
@@ -150,7 +150,7 @@ void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
   jsiObject.setProperty(rt, "geometry", geometry);
 }
 
-void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
+void tileToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
                   mapbox::feature::feature<std::int16_t> &f,
                   jsi::Array &featuresInput) {
   // .id
@@ -176,7 +176,7 @@ void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
   jsi::Object tags = jsi::Object(rt);
   int origFeatureIndex = -1;
   for(auto &itr : f.properties) {
-    featureToJSIProperty(rt, tags, itr, origFeatureIndex);
+    propertiesToJSI(rt, tags, itr, origFeatureIndex);
   }
 
   if(origFeatureIndex != -1) {
@@ -191,9 +191,9 @@ void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
   }
 }
 
-void featureToJSIProperty(
+void propertiesToJSI(
     jsi::Runtime &rt, jsi::Object &jsiPropertyObject,
-    std::__1::pair<const std::__1::string, mapbox::feature::value> &itr,
+    std::pair<const std::string, mapbox::feature::value> &itr,
     int &origFeatureIndex) {
   auto name = jsi::String::createFromUtf8(rt, itr.first);
   auto type = itr.second.which();

@@ -76,7 +76,7 @@ jsi::Value SuperclusterHostObject::get(jsi::Runtime &runtime,
           int i = 0;
           for(auto &tile : tiles) {
             jsi::Object jsiTile = jsi::Object(rt);
-            featureToJSI(rt, jsiTile, tile, featuresInput);
+            tileToJSI(rt, jsiTile, tile, featuresInput);
             result.setValueAtIndex(rt, i, jsiTile);
             i++;
           }

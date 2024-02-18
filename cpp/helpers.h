@@ -22,13 +22,13 @@ void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
                   mapbox::feature::feature<double> &f,
                   jsi::Array &featuresInput);
 
-void featureToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
+void tileToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
                   mapbox::feature::feature<std::int16_t> &f,
                   jsi::Array &featuresInput);
 
-void featureToJSIProperty(
+void propertiesToJSI(
     jsi::Runtime &rt, jsi::Object &jsiPropertyObject,
-    std::__1::pair<const std::__1::string, mapbox::feature::value> &itr,
+    std::pair<const std::string, mapbox::feature::value> &itr,
     int &origFeatureIndex);
 
 }  // namespace clusterer
