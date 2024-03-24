@@ -112,10 +112,8 @@ void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
                   mapbox::feature::feature<double> &f,
                   jsi::Array &featuresInput) {
   // .id
-  const auto itr = f.properties.find("cluster_id");
-  if(itr != f.properties.end() && itr->second.is<uint64_t>()) {
-    jsiObject.setProperty(
-        rt, "id", jsi::Value((int)f.properties["cluster_id"].get<uint64_t>()));
+  if(f.id.is<uint64_t>()) {
+    jsiObject.setProperty(rt, "id", jsi::Value((int)f.id.get<uint64_t>()));
   }
 
   //  .type
@@ -154,10 +152,8 @@ void tileToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
                   mapbox::feature::feature<std::int16_t> &f,
                   jsi::Array &featuresInput) {
   // .id
-  const auto itr = f.properties.find("cluster_id");
-  if(itr != f.properties.end() && itr->second.is<uint64_t>()) {
-    jsiObject.setProperty(
-        rt, "id", jsi::Value((int)f.properties["cluster_id"].get<uint64_t>()));
+  if(f.id.is<uint64_t>()) {
+    jsiObject.setProperty(rt, "id", jsi::Value((int)f.id.get<uint64_t>()));
   }
 
   // .type
