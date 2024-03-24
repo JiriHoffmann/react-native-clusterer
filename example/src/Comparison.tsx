@@ -89,12 +89,13 @@ export const Comparison: FunctionComponent<{}> = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 10,
-    marginHorizontal: 20,
+    marginHorizontal: 10,
+    gap: 10
   },
   h2: {
     fontSize: 16,
     fontWeight: 'bold',
+    marginTop: 10,
   },
   buttonContainer: {
     position: 'absolute',
@@ -106,7 +107,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   defaultDataButton: {
-    marginVertical: 5,
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
@@ -123,7 +123,6 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    marginBottom: 10,
   },
   input: {
     flex: 1,
@@ -139,6 +138,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 40,
     borderWidth: 2,
-    marginTop: 20,
   },
 });

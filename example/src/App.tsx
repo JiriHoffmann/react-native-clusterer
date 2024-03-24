@@ -9,9 +9,10 @@ import {
 } from 'react-native';
 import { Map } from './Map';
 import { Comparison } from './Comparison';
+import { Tests } from './Tests';
 
 export default function App() {
-  const [showType, setType] = useState<null | 'map' | 'speed'>(null);
+  const [showType, setType] = useState<null | 'map' | 'speed' | 'test'>(null);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -21,7 +22,6 @@ export default function App() {
           style={{
             ...styles.button,
             borderColor: '#ed8e8e',
-            marginRight: 10,
             backgroundColor: showType === 'map' ? '#ed8e8e' : '#ed8e8e50',
           }}
           onPress={() => setType('map')}
@@ -38,9 +38,20 @@ export default function App() {
         >
           <Text>⚡ Speed Comparison</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            ...styles.button,
+            borderColor: '#8eedb1',
+            backgroundColor: showType === 'test' ? '#8eedb1' : '#8eedb150',
+          }}
+          onPress={() => setType('test')}
+        >
+          <Text>🧪 Tests</Text>
+        </TouchableOpacity>
       </View>
       {showType === 'map' && <Map />}
       {showType === 'speed' && <Comparison />}
+      {showType === 'test' && <Tests />}
     </SafeAreaView>
   );
 }
@@ -53,12 +64,14 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginHorizontal: 20,
+    marginHorizontal: 10,
+    marginBottom: 5,
   },
   buttonContainer: {
     flexDirection: 'row',
     marginBottom: 10,
-    marginHorizontal: 20,
+    marginHorizontal: 10,
+    gap: 10,
   },
   button: {
     flex: 1,
