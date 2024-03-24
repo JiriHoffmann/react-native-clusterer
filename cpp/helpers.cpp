@@ -119,11 +119,21 @@ void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
   //  .type
   jsiObject.setProperty(rt, "type", jsi::String::createFromUtf8(rt, "Feature"));
 
+  // .geometry - differs from tile geometry
+  jsi::Object geometry = jsi::Object(rt);
+  jsi::Array coordinates = jsi::Array(rt, 2);
+  auto geo = f.geometry.get<mapbox::geometry::point<double>>();
+  coordinates.setValueAtIndex(rt, 0, jsi::Value(geo.x));
+  coordinates.setValueAtIndex(rt, 1, jsi::Value(geo.y));
+  geometry.setProperty(rt, "type", jsi::String::createFromUtf8(rt, "Point"));
+  geometry.setProperty(rt, "coordinates", coordinates);
+  jsiObject.setProperty(rt, "geometry", geometry);
+
   // .properties
   jsi::Object properties = jsi::Object(rt);
   int origFeatureIndex = -1;
   for(auto &itr : f.properties) {
-    propertiesToJSI(rt, properties, itr, origFeatureIndex);
+    featurePropertyToJSI(rt, properties, itr, origFeatureIndex);
   }
 
   if(origFeatureIndex != -1) {
@@ -136,21 +146,11 @@ void clusterToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
   } else {
     jsiObject.setProperty(rt, "properties", properties);
   }
-
-  // .geometry - differs from tile geometry
-  jsi::Object geometry = jsi::Object(rt);
-  jsi::Array coordinates = jsi::Array(rt, 2);
-  auto geo = f.geometry.get<mapbox::geometry::point<double>>();
-  coordinates.setValueAtIndex(rt, 0, jsi::Value(geo.x));
-  coordinates.setValueAtIndex(rt, 1, jsi::Value(geo.y));
-  geometry.setProperty(rt, "type", jsi::String::createFromUtf8(rt, "Point"));
-  geometry.setProperty(rt, "coordinates", coordinates);
-  jsiObject.setProperty(rt, "geometry", geometry);
 }
 
 void tileToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
-                  mapbox::feature::feature<std::int16_t> &f,
-                  jsi::Array &featuresInput) {
+               mapbox::feature::feature<std::int16_t> &f,
+               jsi::Array &featuresInput) {
   // .id
   if(f.id.is<uint64_t>()) {
     jsiObject.setProperty(rt, "id", jsi::Value((int)f.id.get<uint64_t>()));
@@ -162,9 +162,9 @@ void tileToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
   // .geometry
   jsi::Array geometryContainer = jsi::Array(rt, 1);
   jsi::Array geometry = jsi::Array(rt, 2);
-  auto gem = f.geometry.get<mapbox::geometry::point<std::int16_t>>();
-  geometry.setValueAtIndex(rt, 0, jsi::Value((int)gem.x));
-  geometry.setValueAtIndex(rt, 1, jsi::Value((int)gem.y));
+  auto geo = f.geometry.get<mapbox::geometry::point<std::int16_t>>();
+  geometry.setValueAtIndex(rt, 0, jsi::Value((int)geo.x));
+  geometry.setValueAtIndex(rt, 1, jsi::Value((int)geo.y));
   geometryContainer.setValueAtIndex(rt, 0, geometry);
   jsiObject.setProperty(rt, "geometry", geometryContainer);
 
@@ -172,7 +172,7 @@ void tileToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
   jsi::Object tags = jsi::Object(rt);
   int origFeatureIndex = -1;
   for(auto &itr : f.properties) {
-    propertiesToJSI(rt, tags, itr, origFeatureIndex);
+    featurePropertyToJSI(rt, tags, itr, origFeatureIndex);
   }
 
   if(origFeatureIndex != -1) {
@@ -187,31 +187,38 @@ void tileToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
   }
 }
 
-void propertiesToJSI(
-    jsi::Runtime &rt, jsi::Object &jsiPropertyObject,
+void featurePropertyToJSI(
+    jsi::Runtime &rt, jsi::Object &jsiFeatureProperties,
     std::pair<const std::string, mapbox::feature::value> &itr,
     int &origFeatureIndex) {
-  auto name = jsi::String::createFromUtf8(rt, itr.first);
+  auto name = itr.first;
+  auto nameJSI = jsi::String::createFromUtf8(rt, name);
   auto type = itr.second.which();
-  if(type == 1) {  // Boolean
-    jsiPropertyObject.setProperty(rt, name,
-                                  jsi::Value(itr.second.get<bool>() == 1));
-  } else if(type == 2) {  // Integer
-    int value = (int)itr.second.get<std::uint64_t>();
-    if(itr.first == "_clusterer_index") {
-      origFeatureIndex = value;
-    }
-    jsiPropertyObject.setProperty(rt, name, value);
-  } else if(type == 3) {  // Double
-    jsiPropertyObject.setProperty(rt, name,
-                                  jsi::Value(itr.second.get<double>()));
-  } else if(type == 4) {  // Double
-    jsiPropertyObject.setProperty(rt, name,
-                                  jsi::Value(itr.second.get<double>()));
-  } else if(type == 5) {  // String
-    jsiPropertyObject.setProperty(
-        rt, name,
+
+  if(name == "_clusterer_index") {
+    origFeatureIndex = (int)itr.second.get<std::uint64_t>();
+  }
+  // Boolean
+  else if(type == 1) {
+    jsiFeatureProperties.setProperty(rt, nameJSI,
+                                     jsi::Value(itr.second.get<bool>() == 1));
+  }
+  // Integer
+  else if(type == 2) {
+    jsiFeatureProperties.setProperty(rt, nameJSI,
+                                     (int)itr.second.get<std::uint64_t>());
+  }
+  // Double
+  else if(type == 3 || type == 4) {
+    jsiFeatureProperties.setProperty(rt, nameJSI,
+                                     jsi::Value(itr.second.get<double>()));
+  }
+  // String
+  else if(type == 5) {
+    jsiFeatureProperties.setProperty(
+        rt, nameJSI,
         jsi::String::createFromUtf8(rt, itr.second.get<std::string>()));
+    return;
   }
 }
 }  // namespace clusterer
