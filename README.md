@@ -87,7 +87,7 @@ Same as [options](#Supercluster-options) for Supercluster, not required.
 
 An array with two elements:
 
-- `points` - Array of points (`GeoJSON Feature point or cluster`). Clusters have an additional getClusterExpansionRegion() which will return a region that can be used to expand the cluster. Same as [expandCluster](<#expandCluster(clusterId)>) without the need for `clusterId` param.
+- `points` - Array of points (`GeoJSON Feature point or cluster`). Clusters have an additional getExpansionRegion() which will return a region that can be used to expand the cluster (use [isPointCluster](<#isPointCluster(point)>) to check if this property is defined). Same as [getClusterExpansionRegion](<#getClusterExpansionRegion(clusterId)>) without the need for `clusterId` param.
 - `supercluster` - [Supercluster](#Supercluster) instance.
 
 # Clusterer
@@ -155,7 +155,7 @@ Same as [options](#Supercluster-Options) for Supercluster.
 
 ### `renderItem`
 
-Function that takes an item (`GeoJSON Feature point or cluster`) and returns a Marker component. `renderItem` additionally provides function getClusterExpansionRegion() inside properies for clusters (ONLY for clusters!) which will return a region that can be used to expand the cluster. Same as [expandCluster](<#expandCluster(clusterId)>) without the need for `clusterId` param.
+Function that takes an item (`GeoJSON Feature point or cluster`) and returns a React component.
 
 # Supercluster
 
@@ -215,7 +215,7 @@ Returns all the points of a cluster (given its `clusterId`), with pagination sup
 
 Returns the zoom on which the cluster expands into several children (useful for "click to zoom" feature) given the cluster's `clusterId`.
 
-#### `expandCluster(clusterId)`
+#### `getClusterExpansionRegion(clusterId)`
 
 Returns a region containing the center of all the points in a cluster and the delta value by which it should be zoomed out to see all the points. Useful for animating a MapView after a cluster press.
 
@@ -224,6 +224,34 @@ Returns a region containing the center of all the points in a cluster and the de
 No longer needed (version 1.2.0 and up).
 
 ~~Since JS doesnt have destructors, we have to make sure the cluster stored in c++ memory is also deleted. This method is called automatically when using the `<Clusterer />` component.~~
+
+## Utility Methods
+
+#### `isPointCluster(point)`
+
+Typescript type guard for checking if a point is a cluster.
+
+##### **Example**
+
+```js
+const _handlePointPress = (point: IFeature) => {
+  if (isPointCluster(point)) {
+    const toRegion = point.properties.getExpansionRegion();
+    mapRef.current?.animateToRegion(toRegion, 500);
+  }
+};
+
+<Clusterer
+  // ... other props
+  renderItem={(item) => {
+    return <Marker item={item} onPress={handlePointPress} />;
+  }}
+/>;
+```
+
+#### `coordsToGeoJSONFeature(coords, properties)`
+
+Converts coordinates to a GeoJSON Feature object. Accepted formats are `[longitude, latitude]` or `{longitude, latitude}` or `{lng, lat}`. Properties can be anything and are optional.
 
 ## TO-DOs
 
