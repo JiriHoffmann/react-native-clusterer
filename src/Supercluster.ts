@@ -104,8 +104,8 @@ export default class SuperclusterClass<
       bbox,
       [mapDimensions.width, mapDimensions.height],
       this.options.minZoom,
-      this.options.maxZoom,
-      512
+      this.options.maxZoom + 1,
+      this.options.extent
     );
 
     return this.cppInstance
