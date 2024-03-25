@@ -253,6 +253,10 @@ const _handlePointPress = (point: IFeature) => {
 
 Converts coordinates to a GeoJSON Feature object. Accepted formats are `[longitude, latitude]` or `{longitude, latitude}` or `{lng, lat}`. Properties can be anything and are optional.
 
+## Troubleshooting
+
+- If you can't see any points on the map, make sure you provided coordinates in the correct __order__ and format. The library expects `[longitude, latitude]` for each point.
+
 ## TO-DOs
 
 - [x] Proper input and return types for methods
