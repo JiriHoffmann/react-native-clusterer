@@ -344,25 +344,25 @@ namespace mapbox
             };
 
             template <typename F, typename V, typename Enable = void>
-            struct result_of_unary_visit
+            struct invoke_result_unary_visit
             {
-                using type = typename std::result_of<F(V &)>::type;
+                using type = typename std::invoke_result<F(V &)>::type;
             };
 
             template <typename F, typename V>
-            struct result_of_unary_visit<F, V, typename enable_if_type<typename F::result_type>::type>
+            struct invoke_result_unary_visit<F, V, typename enable_if_type<typename F::result_type>::type>
             {
                 using type = typename F::result_type;
             };
 
             template <typename F, typename V, typename Enable = void>
-            struct result_of_binary_visit
+            struct invoke_result_binary_visit
             {
-                using type = typename std::result_of<F(V &, V &)>::type;
+                using type = typename std::invoke_result<F(V &, V &)>::type;
             };
 
             template <typename F, typename V>
-            struct result_of_binary_visit<F, V, typename enable_if_type<typename F::result_type>::type>
+            struct invoke_result_binary_visit<F, V, typename enable_if_type<typename F::result_type>::type>
             {
                 using type = typename F::result_type;
             };
@@ -1028,14 +1028,14 @@ namespace mapbox
 
             // visitor
             // unary
-            template <typename F, typename V, typename R = typename detail::result_of_unary_visit<F, first_type>::type>
+            template <typename F, typename V, typename R = typename detail::invoke_result_unary_visit<F, first_type>::type>
             auto VARIANT_INLINE static visit(V const &v, F &&f)
                 -> decltype(detail::dispatcher<F, V, R, Types...>::apply_const(v, std::forward<F>(f)))
             {
                 return detail::dispatcher<F, V, R, Types...>::apply_const(v, std::forward<F>(f));
             }
             // non-const
-            template <typename F, typename V, typename R = typename detail::result_of_unary_visit<F, first_type>::type>
+            template <typename F, typename V, typename R = typename detail::invoke_result_unary_visit<F, first_type>::type>
             auto VARIANT_INLINE static visit(V &v, F &&f)
                 -> decltype(detail::dispatcher<F, V, R, Types...>::apply(v, std::forward<F>(f)))
             {
@@ -1044,14 +1044,14 @@ namespace mapbox
 
             // binary
             // const
-            template <typename F, typename V, typename R = typename detail::result_of_binary_visit<F, first_type>::type>
+            template <typename F, typename V, typename R = typename detail::invoke_result_binary_visit<F, first_type>::type>
             auto VARIANT_INLINE static binary_visit(V const &v0, V const &v1, F &&f)
                 -> decltype(detail::binary_dispatcher<F, V, R, Types...>::apply_const(v0, v1, std::forward<F>(f)))
             {
                 return detail::binary_dispatcher<F, V, R, Types...>::apply_const(v0, v1, std::forward<F>(f));
             }
             // non-const
-            template <typename F, typename V, typename R = typename detail::result_of_binary_visit<F, first_type>::type>
+            template <typename F, typename V, typename R = typename detail::invoke_result_binary_visit<F, first_type>::type>
             auto VARIANT_INLINE static binary_visit(V &v0, V &v1, F &&f)
                 -> decltype(detail::binary_dispatcher<F, V, R, Types...>::apply(v0, v1, std::forward<F>(f)))
             {
