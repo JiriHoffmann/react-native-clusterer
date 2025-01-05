@@ -26,9 +26,11 @@ void tileToJSI(jsi::Runtime &rt, jsi::Object &jsiObject,
                mapbox::feature::feature<std::int16_t> &f,
                jsi::Array &featuresInput);
 
-void featurePropertyToJSI(jsi::Runtime &rt,
-                   jsi::Object &jsiFeatureProperties,
-                   std::pair<const std::string, mapbox::feature::value> &itr,
-                   int &origFeatureIndex);
+void featurePropertyToJSI(
+    jsi::Runtime &rt, jsi::Object &jsiFeatureProperties,
+    std::pair<const std::string, mapbox::feature::value> &itr,
+    int &origFeatureIndex);
+
+void installHelpers(jsi::Runtime &jsiRuntime);
 
 }  // namespace clusterer

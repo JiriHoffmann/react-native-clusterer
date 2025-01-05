@@ -221,4 +221,144 @@ void featurePropertyToJSI(
     return;
   }
 }
+
+double calculateDelta(double x, double y) {
+  if(x > y) {
+    return x - y;
+  }
+  return y - x;
+}
+
+double calculateAverage(initializer_list<double> args) {
+  if(args.size() == 0) {
+    return 0;
+  }
+
+  double sum = 0;
+  for(auto &num : args) sum += num;
+
+  return sum / args.size();
+}
+
+void installHelpers(jsi::Runtime &jsiRuntime) {
+  auto regionToBBox = jsi::Function::createFromHostFunction(
+      jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "regionToBBox"), 1,
+      [](jsi::Runtime &runtime, const jsi::Value &thisValue,
+         const jsi::Value *arguments, size_t count) -> jsi::Array {
+        jsi::Object region = arguments[0].getObject(runtime);
+
+        double longitudeDelta =
+            region.getProperty(runtime, "longitudeDelta").asNumber();
+
+        double latitudeDelta =
+            region.getProperty(runtime, "latitudeDelta").asNumber();
+
+        double longitude = region.getProperty(runtime, "longitude").asNumber();
+
+        double latitude = region.getProperty(runtime, "latitude").asNumber();
+
+        double lngD = longitudeDelta;
+
+        if(longitudeDelta < 0) {
+          lngD = longitudeDelta + 360;
+        }
+
+        jsi::Array bbox = jsi::Array(runtime, 4);
+
+        bbox.setValueAtIndex(runtime, 0, longitude - lngD);
+        bbox.setValueAtIndex(runtime, 1, latitude - latitudeDelta);
+        bbox.setValueAtIndex(runtime, 2, longitude + lngD);
+        bbox.setValueAtIndex(runtime, 3, latitude + latitudeDelta);
+
+        return bbox;
+      });
+
+  auto getMarkersRegion = jsi::Function::createFromHostFunction(
+      jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "getMarkersRegion"), 1,
+      [](jsi::Runtime &runtime, const jsi::Value &thisValue,
+         const jsi::Value *arguments, size_t count) -> jsi::Object {
+        auto points = arguments[0].getObject(runtime).asArray(runtime);
+
+        jsi::Object initialValue =
+            points.getValueAtIndex(runtime, 0).asObject(runtime);
+
+        jsi::Object coordinates = jsi::Object(runtime);
+
+        coordinates.setProperty(
+            runtime, "minX",
+            initialValue.getProperty(runtime, "latitude").asNumber());
+
+        coordinates.setProperty(
+            runtime, "maxX",
+            initialValue.getProperty(runtime, "latitude").asNumber());
+
+        coordinates.setProperty(
+            runtime, "minY",
+            initialValue.getProperty(runtime, "longitude").asNumber());
+
+        coordinates.setProperty(
+            runtime, "maxY",
+            initialValue.getProperty(runtime, "longitude").asNumber());
+
+        for(int i = 0; i < points.size(runtime); i++) {
+          jsi::Object point =
+              points.getValueAtIndex(runtime, i).asObject(runtime);
+
+          double minX =
+              std::min(coordinates.getProperty(runtime, "minX").asNumber(),
+                       point.getProperty(runtime, "latitude").asNumber());
+
+          double maxX =
+              std::max(coordinates.getProperty(runtime, "maxX").asNumber(),
+                       point.getProperty(runtime, "latitude").asNumber());
+
+          double minY =
+              std::min(coordinates.getProperty(runtime, "minY").asNumber(),
+                       point.getProperty(runtime, "longitude").asNumber());
+
+          double maxY =
+              std::max(coordinates.getProperty(runtime, "maxY").asNumber(),
+                       point.getProperty(runtime, "longitude").asNumber());
+
+          coordinates.setProperty(runtime, "minX", minX);
+
+          coordinates.setProperty(runtime, "maxX", maxX);
+
+          coordinates.setProperty(runtime, "minY", minY);
+
+          coordinates.setProperty(runtime, "maxY", maxY);
+        }
+
+        double deltaX =
+            calculateDelta(coordinates.getProperty(runtime, "maxX").asNumber(),
+                           coordinates.getProperty(runtime, "minX").asNumber());
+        double deltaY =
+            calculateDelta(coordinates.getProperty(runtime, "maxY").asNumber(),
+                           coordinates.getProperty(runtime, "minY").asNumber());
+
+        jsi::Object region = jsi::Object(runtime);
+
+        region.setProperty(
+            runtime, "latitude",
+            calculateAverage(
+                {coordinates.getProperty(runtime, "minX").asNumber(),
+                 coordinates.getProperty(runtime, "maxX").asNumber()}));
+
+        region.setProperty(
+            runtime, "longitude",
+            calculateAverage(
+                {coordinates.getProperty(runtime, "minY").asNumber(),
+                 coordinates.getProperty(runtime, "maxY").asNumber()}));
+
+        region.setProperty(runtime, "latitudeDelta", deltaX * 1.5);
+        region.setProperty(runtime, "longitudeDelta", deltaY * 1.5);
+
+        return region;
+      });
+
+  jsiRuntime.global().setProperty(jsiRuntime, "regionToBBox",
+                                  std::move(regionToBBox));
+  jsiRuntime.global().setProperty(jsiRuntime, "getMarkersRegion",
+                                  std::move(getMarkersRegion));
+}
 }  // namespace clusterer
