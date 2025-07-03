@@ -143,4 +143,3 @@ declare namespace Supercluster {
 }
 
 export default Supercluster;
-

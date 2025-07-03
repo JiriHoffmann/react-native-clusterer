@@ -29,10 +29,10 @@ export const deepEqualWithoutIds = (x: any, y: any) => {
   if (x === y) return true;
   // if both x and y are null or undefined and exactly the same
 
-  if (!(x instanceof Object) || !(y instanceof Object))  return false;
+  if (!(x instanceof Object) || !(y instanceof Object)) return false;
   // if they are not strictly equal, they both need to be Objects
 
-  if (x.constructor !== y.constructor)  return false;
+  if (x.constructor !== y.constructor) return false;
   // they must have the exact same prototype chain, the closest we can do is
   // test there constructor.
 
