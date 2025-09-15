@@ -2,7 +2,7 @@ project(ReactNativeClusterer)
 cmake_minimum_required(VERSION 3.9.0)
 
 set (CMAKE_VERBOSE_MAKEFILE ON)
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 20)
 set (PACKAGE_NAME "rnclusterer")
 set (BUILD_DIR ./build)
 
@@ -28,13 +28,6 @@ add_library(
 
 find_package(ReactAndroid REQUIRED CONFIG)
 find_library(log-lib log)
-
-# Apply linker optimization: 16KB alignment for .so files
-target_link_options(${PACKAGE_NAME} PRIVATE
-  "-Wl,--no-undefined"
-  "-Wl,--page-align"
-)
-
 
 # Link JNI, JSI, LOG_LIB
 target_link_libraries(
