@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginHorizontal: 10,
-    gap: 10
+    gap: 10,
   },
   h2: {
     fontSize: 16,

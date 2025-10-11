@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import type Supercluster from './types';
 import type { MapDimensions, Region } from './types';
 import SuperclusterClass from './Supercluster';
@@ -14,32 +14,50 @@ export function useClusterer<
   options?: Supercluster.Options<P, C>
 ): [
   (Supercluster.PointFeature<P> | Supercluster.ClusterFeature<C>)[],
-  SuperclusterClass<P, C>
+  SuperclusterClass<P, C> | undefined
 ] {
-  const supercluster = useMemo(
-    () => new SuperclusterClass(options).load(data),
-    [
-      data,
-      options?.extent,
-      options?.maxZoom,
-      options?.minZoom,
-      options?.minPoints,
-      options?.radius,
-    ]
-  );
+  const [superclusterInstance, setSuperclusterInstance] = useState<
+    SuperclusterClass<P, C> | undefined
+  >(undefined);
 
-  const points = useMemo(
-    () => supercluster.getClustersFromRegion(region, mapDimensions),
-    [
-      supercluster,
-      region.latitude,
-      region.longitude,
-      region.latitudeDelta,
-      region.longitudeDelta,
-      mapDimensions.width,
-      mapDimensions.height,
-    ]
-  );
+  const [points, setPoints] = useState<
+    Supercluster.PointOrClusterFeature<P, C>[]
+  >([]);
 
-  return [points, supercluster];
+  useEffect(() => {
+    if (data.length > 0) {
+      const supercluster = new SuperclusterClass(options).load(data);
+      setSuperclusterInstance(supercluster);
+    }
+  }, [
+    data,
+    data.length,
+    options?.extent,
+    options?.maxZoom,
+    options?.minZoom,
+    options?.minPoints,
+    options?.radius,
+  ]);
+
+  useEffect(() => {
+    if (!superclusterInstance) {
+      setPoints([]);
+    } else {
+      const newPoints = superclusterInstance?.getClustersFromRegion(
+        region,
+        mapDimensions
+      );
+      setPoints(newPoints as Supercluster.PointOrClusterFeature<P, C>[]);
+    }
+  }, [
+    superclusterInstance,
+    region.latitude,
+    region.longitude,
+    region.latitudeDelta,
+    region.longitudeDelta,
+    mapDimensions.width,
+    mapDimensions.height,
+  ]);
+
+  return [points, superclusterInstance];
 }
