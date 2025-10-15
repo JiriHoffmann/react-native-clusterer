@@ -41,4 +41,22 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
     return @true;
 }
 
+RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(installHelpers)
+{
+    RCTBridge* bridge = [RCTBridge currentBridge];
+    RCTCxxBridge* cxxBridge = (RCTCxxBridge*)bridge;
+    if (cxxBridge == nil) {
+        return @false;
+    }
+
+    auto jsiRuntime = (jsi::Runtime*) cxxBridge.runtime;
+    if (jsiRuntime == nil) {
+        return @false;
+    }
+
+    clusterer::installHelpers(*(facebook::jsi::Runtime *)jsiRuntime);
+
+    return @true;
+}
+
 @end

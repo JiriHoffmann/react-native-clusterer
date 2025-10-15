@@ -1,9 +1,9 @@
 import { NativeModules, Platform } from 'react-native';
 import GeoViewport from '@mapbox/geo-viewport';
-import { getMarkersCoordinates, getMarkersRegion, regionToBBox } from './utils';
+import { getMarkersCoordinates } from './utils';
 
 import type * as GeoJSON from 'geojson';
-import type { MapDimensions, Region } from './types';
+import type { MapDimensions, Region, BBox, LatLng } from './types';
 import type Supercluster from './types';
 
 const module = NativeModules.Clusterer;
@@ -15,6 +15,19 @@ if (
 ) {
   module.install();
 }
+
+if (
+  module &&
+  typeof module.installHelpers === 'function' &&
+  !(global as any).regionToBBox &&
+  !(global as any).getMarkersRegion
+) {
+  module.installHelpers();
+}
+
+const regionToBBox: (region: Region) => BBox = (global as any).regionToBBox;
+const getMarkersRegion: (points: LatLng[]) => Region = (global as any)
+  .getMarkersRegion;
 
 const createSupercluster = (global as any).createSupercluster;
 const defaultOptions = {
