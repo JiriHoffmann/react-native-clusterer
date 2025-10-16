@@ -1,13 +1,15 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import { Clusterer, isPointCluster } from 'react-native-clusterer';
-import MapView, { Region } from 'react-native-maps';
+import {
+  Clusterer,
+  isPointCluster,
+  type Supercluster,
+} from 'react-native-clusterer';
+import MapView, { type Region } from 'react-native-maps';
 import { initialRegion, parsedPlacesData } from './places';
 import { Point } from './Point';
 
-import type { supercluster } from 'react-native-clusterer';
-
-type IFeature = supercluster.PointOrClusterFeature<any, any>;
+type IFeature = Supercluster.PointOrClusterFeature<any, any>;
 
 const MAP_WIDTH = Dimensions.get('window').width;
 const MAP_HEIGHT = Dimensions.get('window').height - 80;

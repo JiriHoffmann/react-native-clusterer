@@ -1,93 +1,105 @@
 {
   "name": "react-native-clusterer",
-  "version": "4.0.0",
+  "version": "0.1.0",
   "description": "React Native clustering library using C++ Supercluster implementation",
-  "main": "lib/commonjs/index",
-  "module": "lib/module/index",
-  "types": "lib/typescript/index.d.ts",
-  "react-native": "src/index",
-  "source": "src/index",
+  "main": "./lib/module/index.js",
+  "types": "./lib/typescript/src/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.tsx",
+      "types": "./lib/typescript/src/index.d.ts",
+      "default": "./lib/module/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "src",
     "lib",
     "android",
     "ios",
     "cpp",
-    "react-native-clusterer.podspec",
-    "!lib/typescript/example",
-    "!android/build",
+    "nitrogen",
+    "nitro.json",
+    "*.podspec",
+    "react-native.config.js",
     "!ios/build",
+    "!android/build",
+    "!android/gradle",
+    "!android/gradlew",
+    "!android/gradlew.bat",
+    "!android/local.properties",
     "!**/__tests__",
     "!**/__fixtures__",
     "!**/__mocks__",
-    "!android/.cxx",
-    "!android/.gradle"
+    "!**/.*"
   ],
   "scripts": {
+    "example": "yarn workspace react-native-clusterer-example",
     "test": "jest",
-    "typescript": "tsc --noEmit",
+    "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
-    "release": "release-it",
-    "example": "yarn --cwd example",
-    "pods": "cd example && pod-install --quiet",
-    "bootstrap": "yarn example && yarn && yarn pods",
-    "clang-format": "find cpp/ -iname *.h -o -iname *.cpp | xargs clang-format -i"
+    "release": "release-it --only-version",
+    "nitrogen": "nitrogen",
+    "nitrogen:ios": "nitrogen && cd example/ios && pod install && cd ../.."
   },
   "keywords": [
-    "react",
-    "native",
     "react-native",
-    "react-native-maps",
-    "map",
-    "maps",
-    "mapview",
     "ios",
-    "android",
-    "cluster",
-    "clusters",
-    "clustering",
-    "clustering-algorithm",
-    "super",
-    "supercluster"
+    "android"
   ],
-  "repository": "https://github.com/JiriHoffmann/react-native-clusterer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JiriHoffmann/react-native-clusterer.git"
+  },
   "author": "Jiri Hoffmann <hoffmaji@mail.gvsu.edu> (https://github.com/JiriHoffmann)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/JiriHoffmann/react-native-clusterer/issues"
   },
-  "homepage": "https://aci.cis.gvsu.edu/2022/03/28/map-marker-clustering-in-react-native-is-now-easier",
+  "homepage": "https://github.com/JiriHoffmann/react-native-clusterer#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "^14.1.0",
-    "@react-native-community/eslint-config": "^3.0.1",
-    "@release-it/conventional-changelog": "^3.3.0",
-    "@types/jest": "^27.0.2",
-    "@types/mapbox__geo-viewport": "^0.4.1",
-    "@types/react": "^17.0.34",
-    "@types/react-native": "0.66.3",
-    "clang-format": "^1.6.0",
-    "commitlint": "^14.1.0",
-    "eslint": "^8.2.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "husky": "^7.0.4",
-    "jest": "^27.3.1",
-    "pod-install": "^0.1.28",
-    "prettier": "^2.4.1",
-    "react": "17.0.2",
-    "react-native": "0.66.3",
-    "react-native-builder-bob": "^0.18.2",
-    "release-it": "^14.11.6",
-    "typescript": "^4.4.4"
+    "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/compat": "^1.3.2",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.35.0",
+    "@evilmartians/lefthook": "^1.12.3",
+    "@react-native/babel-preset": "0.81.1",
+    "@react-native/eslint-config": "^0.81.1",
+    "@release-it/conventional-changelog": "^10.0.1",
+    "@types/geojson": "^7946.0.8",
+    "@types/jest": "^29.5.14",
+    "@types/mapbox__geo-viewport": "0.4.1",
+    "@types/react": "^19.1.0",
+    "commitlint": "^19.8.1",
+    "del-cli": "^6.0.0",
+    "eslint": "^9.35.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^29.7.0",
+    "nitrogen": "^0.30.2",
+    "prettier": "^3.6.2",
+    "react": "19.1.0",
+    "react-native": "0.81.4",
+    "react-native-builder-bob": "^0.40.13",
+    "react-native-nitro-modules": "^0.30.2",
+    "release-it": "^19.0.4",
+    "turbo": "^2.5.6",
+    "typescript": "^5.9.2"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "react-native-nitro-modules": "^0.30.2"
   },
+  "workspaces": [
+    "example"
+  ],
+  "packageManager": "yarn@3.6.1",
   "jest": {
     "preset": "react-native",
     "modulePathIgnorePatterns": [
@@ -113,33 +125,12 @@
     },
     "plugins": {
       "@release-it/conventional-changelog": {
-        "preset": "angular"
+        "preset": {
+          "name": "angular"
+        }
       }
     }
   },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@react-native-community",
-      "prettier"
-    ],
-    "rules": {
-      "prettier/prettier": [
-        "error",
-        {
-          "quoteProps": "consistent",
-          "singleQuote": true,
-          "tabWidth": 2,
-          "trailingComma": "es5",
-          "useTabs": false
-        }
-      ]
-    }
-  },
-  "eslintIgnore": [
-    "node_modules/",
-    "lib/"
-  ],
   "prettier": {
     "quoteProps": "consistent",
     "singleQuote": true,
@@ -151,8 +142,19 @@
     "source": "src",
     "output": "lib",
     "targets": [
-      "commonjs",
-      "module",
+      [
+        "custom",
+        {
+          "script": "nitrogen",
+          "clean": "nitrogen/"
+        }
+      ],
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
       [
         "typescript",
         {
@@ -161,8 +163,12 @@
       ]
     ]
   },
+  "create-react-native-library": {
+    "languages": "kotlin-swift",
+    "type": "nitro-module",
+    "version": "0.54.5"
+  },
   "dependencies": {
-    "@mapbox/geo-viewport": "^0.5.0",
-    "@types/geojson": "^7946.0.8"
+    "@mapbox/geo-viewport": "^0.5.0"
   }
 }

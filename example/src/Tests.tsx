@@ -1,9 +1,11 @@
-import React, { FunctionComponent } from 'react';
+import { type FunctionComponent } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 
 import Supercluster from 'react-native-clusterer';
+import SuperclusterJS from 'supercluster';
 import { places, placesTile, placesTileMin5 } from './test/fixtures';
-import { deepEqualWithoutIds } from './utils';
+import { deepEqualWithoutIds, superclusterOptions } from './utils';
+import { getRandomData } from './places';
 
 export const Tests: FunctionComponent<{}> = () => {
   const generatesClustersProperly = () => {
@@ -75,17 +77,17 @@ export const Tests: FunctionComponent<{}> = () => {
       },
     ]);
     const leaves = index.getLeaves(1, Infinity, 0);
-    return leaves[0].properties === null;
+    return leaves[0]?.properties === null;
   };
 
   const returnsClusterExpansionZoom = () => {
     const index = new Supercluster().load(places.features);
 
     return (
-      index.getClusterExpansionZoom(2) == 2 &&
-      index.getClusterExpansionZoom(2978) == 3 &&
-      index.getClusterExpansionZoom(516) == 5 &&
-      index.getClusterExpansionZoom(3014) == 6
+      index.getClusterExpansionZoom(2) === 2 &&
+      index.getClusterExpansionZoom(2978) === 3 &&
+      index.getClusterExpansionZoom(516) === 5 &&
+      index.getClusterExpansionZoom(3014) === 6
     );
   };
 
@@ -189,7 +191,7 @@ export const Tests: FunctionComponent<{}> = () => {
       },
     ]);
     const clusters = index.getClusters([-180, -85, 180, 85], 1);
-    return clusters[0].properties.point_count === 2;
+    return clusters[0]?.properties.point_count === 2;
   };
 
   const makesSureUnclusteredPointCoordsAreNotRounded = () => {
@@ -205,7 +207,7 @@ export const Tests: FunctionComponent<{}> = () => {
     ]);
 
     return deepEqualWithoutIds(
-      index.getTile(20, 1028744, 656754)!.features[0].geometry[0],
+      index.getTile(20, 1028744, 656754)!.features[0]?.geometry[0],
       [421, 281]
     );
   };
@@ -213,6 +215,28 @@ export const Tests: FunctionComponent<{}> = () => {
   const doesNotThrowOnZeroItems = () => {
     const index = new Supercluster().load([]);
     return deepEqualWithoutIds(index.getClusters([-180, -85, 180, 85], 0), []);
+  };
+
+  const resultsAreTheSameAsJS = () => {
+    const clusterCPP = new Supercluster(superclusterOptions).load(
+      places.features
+    );
+    const clusterJS = new SuperclusterJS(superclusterOptions).load(
+      places.features
+    );
+    return deepEqualWithoutIds(
+      clusterCPP.getClusters([-180, -85, 180, 85], 0),
+      clusterJS.getClusters([-180, -85, 180, 85], 0)
+    );
+  };
+
+  const randomDataResultsAreTheSameAsJS = () => {
+    const randomData = getRandomData(100);
+    const clusterCPP = new Supercluster(superclusterOptions).load(randomData);
+    const clusterJS = new SuperclusterJS(superclusterOptions).load(randomData);
+    const dataCPP = clusterCPP.getClusters([-180, -85, 180, 85], 0);
+    const dataJS = clusterJS.getClusters([-180, -85, 180, 85], 0);
+    return deepEqualWithoutIds(dataCPP, dataJS);
   };
 
   return (
@@ -267,6 +291,14 @@ export const Tests: FunctionComponent<{}> = () => {
       </Text>
       <Text>
         does not throw on zero items {doesNotThrowOnZeroItems() ? '✅' : '❌'}
+      </Text>
+
+      <Text>
+        results are the same as JS {resultsAreTheSameAsJS() ? '✅' : '❌'}
+      </Text>
+      <Text>
+        random data results are the same as JS{' '}
+        {randomDataResultsAreTheSameAsJS() ? '✅' : '❌'}
       </Text>
     </View>
   );

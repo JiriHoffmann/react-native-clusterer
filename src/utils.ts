@@ -1,5 +1,5 @@
 import type { Feature, Point } from 'geojson';
-import type Supercluster from './types';
+import type { Supercluster } from './types';
 import type { BBox, LatLng, Region } from './types';
 
 const calculateDelta = (x: number, y: number): number =>
@@ -58,6 +58,11 @@ export const getMarkersRegion = (points: LatLng[]): Region => {
 
 export const getMarkersCoordinates = (markers: Feature<Point>) => {
   const [longitude, latitude] = markers.geometry.coordinates;
+  if (!longitude || !latitude) {
+    throw new Error(
+      `Invalid geometry coordinates: ${JSON.stringify(markers.geometry.coordinates)}`
+    );
+  }
   return { longitude, latitude };
 };
 
@@ -66,9 +71,16 @@ export const getMarkersCoordinates = (markers: Feature<Point>) => {
  * @param point ClusterFeature or PointFeature
  */
 export const isPointCluster = <P, C>(
-  point: Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>
-): point is Supercluster.ClusterFeature<C> => {
-  return 'properties' in point && 'cluster' in (point.properties as any);
+  point:
+    | supercluster.ClusterFeature<C>
+    | supercluster.PointFeature<P>
+    | Supercluster.ClusterFeatureBase<C>
+): point is supercluster.ClusterFeature<C> => {
+  return (
+    'properties' in point &&
+    'cluster' in (point.properties as any) &&
+    'cluster_id' in (point.properties as any)
+  );
 };
 
 type CoordOptions =
@@ -84,7 +96,7 @@ type CoordOptions =
 export const coordsToGeoJSONFeature = <T>(
   coords: CoordOptions,
   props?: T
-): Supercluster.PointFeature<T | undefined> => {
+): supercluster.PointFeature<T | undefined> => {
   let coordinates;
   if (Array.isArray(coords)) {
     coordinates = coords;
