@@ -3,7 +3,7 @@ import GeoViewport from '@mapbox/geo-viewport';
 import {
   getMarkersCoordinates,
   getMarkersRegion,
-  isPointCluster,
+  isClusterFeature,
   regionToBBox,
 } from './utils';
 
@@ -195,7 +195,7 @@ export default class SuperclusterClass<
   private addExpansionRegionToCluster = (
     feature: supercluster.PointFeature<P> | Supercluster.ClusterFeatureBase<C>
   ) => {
-    if (isPointCluster(feature)) {
+    if (isClusterFeature(feature)) {
       feature.properties.getExpansionRegion = () =>
         this.getClusterExpansionRegion(feature.properties!.cluster_id);
     }

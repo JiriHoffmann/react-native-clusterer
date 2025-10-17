@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import {
   Clusterer,
-  isPointCluster,
+  isClusterFeature,
   type Supercluster,
 } from 'react-native-clusterer';
 import MapView, { type Region } from 'react-native-maps';
@@ -20,7 +20,7 @@ export const Map = () => {
   const mapRef = useRef<MapView>(null);
 
   const _handlePointPress = (point: IFeature) => {
-    if (isPointCluster(point)) {
+    if (isClusterFeature(point)) {
       const toRegion = point.properties.getExpansionRegion();
       mapRef.current?.animateToRegion(toRegion, 500);
     }
@@ -43,7 +43,7 @@ export const Map = () => {
             return (
               <Point
                 key={
-                  isPointCluster(item)
+                  isClusterFeature(item)
                     ? `cluster-${item.properties.cluster_id}`
                     : `point-${item.properties.id}`
                 }

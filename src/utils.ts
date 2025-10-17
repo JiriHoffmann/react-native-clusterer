@@ -67,10 +67,10 @@ export const getMarkersCoordinates = (markers: Feature<Point>) => {
 };
 
 /**
- * Determines if a point is a cluster for `.properties` typesafe accessiblity
+ * Determines if a feature is a cluster for `.properties` typesafe accessiblity
  * @param point ClusterFeature or PointFeature
  */
-export const isPointCluster = <P, C>(
+export const isClusterFeature = <P, C>(
   point:
     | supercluster.ClusterFeature<C>
     | supercluster.PointFeature<P>

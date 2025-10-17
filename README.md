@@ -86,7 +86,7 @@ Same as [options](#Supercluster-options) for Supercluster, not required.
 
 An array with two elements:
 
-- `points` - Array of points (`GeoJSON Feature point or cluster`). Clusters have an additional getExpansionRegion() which will return a region that can be used to expand the cluster (use [isPointCluster](<#isPointCluster(point)>) to check if this property is defined). Same as [getClusterExpansionRegion](<#getClusterExpansionRegion(clusterId)>) without the need for `clusterId` param.
+- `points` - Array of points (`GeoJSON Feature point or cluster`). Clusters have an additional getExpansionRegion() which will return a region that can be used to expand the cluster (use [isClusterFeature](<#isClusterFeature(point)>) to check if this property is defined). Same as [getClusterExpansionRegion](<#getClusterExpansionRegion(clusterId)>) without the need for `clusterId` param.
 - `supercluster` - [Supercluster](#Supercluster) instance.
 
 # Clusterer
@@ -226,7 +226,7 @@ No longer needed (version 1.2.0 and up).
 
 ## Utility Methods
 
-#### `isPointCluster(point)`
+#### `isClusterFeature(point)`
 
 Typescript type guard for checking if a point is a cluster.
 
@@ -234,7 +234,7 @@ Typescript type guard for checking if a point is a cluster.
 
 ```js
 const _handlePointPress = (point: IFeature) => {
-  if (isPointCluster(point)) {
+  if (isClusterFeature(point)) {
     const toRegion = point.properties.getExpansionRegion();
     mapRef.current?.animateToRegion(toRegion, 500);
   }
