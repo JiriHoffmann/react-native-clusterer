@@ -1,6 +1,6 @@
 {
   "name": "react-native-clusterer",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "React Native clustering library using C++ Supercluster implementation",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
