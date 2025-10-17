@@ -72,10 +72,10 @@ export const getMarkersCoordinates = (markers: Feature<Point>) => {
  */
 export const isClusterFeature = <P, C>(
   point:
-    | supercluster.ClusterFeature<C>
-    | supercluster.PointFeature<P>
+    | Supercluster.ClusterFeature<C>
+    | Supercluster.PointFeature<P>
     | Supercluster.ClusterFeatureBase<C>
-): point is supercluster.ClusterFeature<C> => {
+): point is Supercluster.ClusterFeature<C> => {
   return (
     'properties' in point &&
     'cluster' in (point.properties as any) &&
@@ -96,7 +96,7 @@ type CoordOptions =
 export const coordsToGeoJSONFeature = <T>(
   coords: CoordOptions,
   props?: T
-): supercluster.PointFeature<T | undefined> => {
+): Supercluster.PointFeature<T | undefined> => {
   let coordinates;
   if (Array.isArray(coords)) {
     coordinates = coords;

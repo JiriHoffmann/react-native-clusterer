@@ -62,7 +62,7 @@ export default class SuperclusterClass<
   getClusters(
     bbox: GeoJSON.BBox,
     zoom: number
-  ): Array<supercluster.ClusterFeature<C> | supercluster.PointFeature<P>> {
+  ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
     this.throwIfNotInitialized();
 
     return this.clusterer
@@ -80,7 +80,7 @@ export default class SuperclusterClass<
   getClustersFromRegion(
     region: Region,
     mapDimensions: MapDimensions
-  ): Array<supercluster.ClusterFeature<C> | supercluster.PointFeature<P>> {
+  ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
     this.throwIfNotInitialized();
 
     const bbox = regionToBBox(region);
@@ -108,7 +108,7 @@ export default class SuperclusterClass<
    * [geojson-vt](https://github.com/mapbox/geojson-vt)-compatible JSON
    * tile object with cluster any point features.
    */
-  getTile(x: number, y: number, zoom: number): supercluster.Tile<C, P> | null {
+  getTile(x: number, y: number, zoom: number): Supercluster.Tile<C, P> | null {
     this.throwIfNotInitialized();
 
     return { features: this.clusterer.getTile(x, y, zoom) };
@@ -122,7 +122,7 @@ export default class SuperclusterClass<
    */
   getChildren(
     clusterId: number
-  ): Array<supercluster.ClusterFeature<C> | supercluster.PointFeature<P>> {
+  ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
     this.throwIfNotInitialized();
 
     return this.clusterer.getChildren(clusterId);
@@ -139,7 +139,7 @@ export default class SuperclusterClass<
     clusterId: number,
     limit?: number,
     offset?: number
-  ): Array<supercluster.PointFeature<P>> {
+  ): Array<Supercluster.PointFeature<P>> {
     this.throwIfNotInitialized();
 
     return this.clusterer.getLeaves(clusterId, limit ?? 10, offset ?? 0);
@@ -183,7 +183,7 @@ export default class SuperclusterClass<
 
   private getMarkersInCluster = (
     clusterId: number
-  ): Array<supercluster.PointFeature<GeoJSON.GeoJsonProperties>> => {
+  ): Array<Supercluster.PointFeature<GeoJSON.GeoJsonProperties>> => {
     const clusterChildren = this.getChildren(clusterId);
 
     if (clusterChildren.length > 1) {
@@ -193,7 +193,7 @@ export default class SuperclusterClass<
   };
 
   private addExpansionRegionToCluster = (
-    feature: supercluster.PointFeature<P> | Supercluster.ClusterFeatureBase<C>
+    feature: Supercluster.PointFeature<P> | Supercluster.ClusterFeatureBase<C>
   ) => {
     if (isClusterFeature(feature)) {
       feature.properties.getExpansionRegion = () =>
