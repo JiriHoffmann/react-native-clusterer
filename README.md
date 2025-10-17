@@ -6,9 +6,8 @@ The most comprehensive and yet easiest to use react native point clustering libr
 
 ```sh
 npm install react-native-clusterer react-native-nitro-modules
-
-> `react-native-nitro-modules` is required as this library relies on [Nitro Modules](https://nitro.margelo.com/).
 ```
+> `react-native-nitro-modules` is required as this library relies on [Nitro Modules](https://nitro.margelo.com/).
 
 # Example
 
