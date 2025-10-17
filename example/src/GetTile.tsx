@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { FunctionComponent, useState } from 'react';
+import { type FunctionComponent, useState } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -23,9 +23,9 @@ const GetTile: FunctionComponent<Props> = ({ data }) => {
   const [y, setY] = useState('0');
   const [z, setZ] = useState('0');
 
-  const xInt = parseInt(x);
-  const yInt = parseInt(y);
-  const zInt = parseInt(z);
+  const xInt = parseInt(x, 10);
+  const yInt = parseInt(y, 10);
+  const zInt = parseInt(z, 10);
 
   const [time, setTime] = useState<string[]>(['0', '0']);
   const [result, setResult] = useState<string>('');

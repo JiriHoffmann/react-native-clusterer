@@ -17,7 +17,7 @@ export const getRandomNum = (min: number, max: number) => {
 };
 
 export const getRandomData = (size: number | string) => {
-  return Array.from({ length: parseInt(`${size}`) }, (_, i) => {
+  return Array.from({ length: parseInt(`${size}`, 10) }, (_, i) => {
     return {
       type: 'Feature' as const,
       geometry: {

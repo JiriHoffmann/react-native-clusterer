@@ -1,10 +1,10 @@
-import React, { FunctionComponent, memo } from 'react';
+import { type FunctionComponent, memo } from 'react';
 import { Text, StyleSheet, View } from 'react-native';
 import { Marker as MapsMarker, Callout } from 'react-native-maps';
 
-import type { supercluster } from 'react-native-clusterer';
+import type { Supercluster } from 'react-native-clusterer';
 
-type IFeature = supercluster.PointOrClusterFeature<any, any>;
+type IFeature = Supercluster.PointOrClusterFeature<any, any>;
 
 interface Props {
   item: IFeature;
@@ -17,8 +17,8 @@ export const Point: FunctionComponent<Props> = memo(
       <MapsMarker
         key={item.properties?.cluster_id ?? `point-${item.properties?.id}`}
         coordinate={{
-          latitude: item.geometry.coordinates[1],
-          longitude: item.geometry.coordinates[0],
+          latitude: item.geometry.coordinates[1] ?? 0,
+          longitude: item.geometry.coordinates[0] ?? 0,
         }}
         tracksViewChanges={false}
         onPress={() => onPress(item)}

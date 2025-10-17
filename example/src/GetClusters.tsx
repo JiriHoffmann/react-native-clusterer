@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { FunctionComponent, useState } from 'react';
+import { type FunctionComponent, useState } from 'react';
 import {
   StyleSheet,
   SafeAreaView,
@@ -9,6 +9,7 @@ import {
   TextInput,
   Platform,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
 import { PerformanceNow, superclusterOptions, timeDelta } from './utils';
 import Supercluster from 'react-native-clusterer';
@@ -26,11 +27,16 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
   const [northLat, setNorthLat] = useState('90');
   const [zoom, setZoom] = useState('1');
 
-  const zoomInt = parseInt(zoom);
+  const [numberOfRuns, setNumberOfRuns] = useState('100');
+  const [jsTimeAverage, setJsTimeAverage] = useState('0');
+  const [cppTimeAverage, setCppTimeAverage] = useState('0');
+
+  const zoomInt = parseInt(zoom, 10);
   const bbox = [westLng, southLat, eastLng, northLat].map(parseFloat) as BBox;
 
   const [time, setTime] = useState<string[]>(['0', '0']);
   const [result, setResult] = useState<string>('');
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   const _handleRunJS = () => {
     if (bbox.some(isNaN)) return console.warn('Invalid input', bbox);
@@ -41,12 +47,13 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
     superclusterJS.load(data);
     const end = PerformanceNow();
 
-    const getTileS = PerformanceNow();
+    const getClustersS = PerformanceNow();
     const clusterRes = superclusterJS.getClusters(bbox, zoomInt);
-    const getTileE = PerformanceNow();
+    const getClustersE = PerformanceNow();
 
     setResult(JSON.stringify(clusterRes));
-    setTime([timeDelta(start, end), timeDelta(getTileS, getTileE)]);
+    setTime([timeDelta(start, end), timeDelta(getClustersS, getClustersE)]);
+    setShowModal(false); // Don't auto-show modal
   };
 
   const _handleRunCPP = () => {
@@ -58,13 +65,79 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
     supercluster.load(data);
     const end = PerformanceNow();
 
-    const getTileS = PerformanceNow();
+    const getClustersS = PerformanceNow();
     const clusterRes = supercluster.getClusters(bbox, zoomInt);
-
-    const getTileE = PerformanceNow();
+    const getClustersE = PerformanceNow();
 
     setResult(JSON.stringify(clusterRes));
-    setTime([timeDelta(start, end), timeDelta(getTileS, getTileE)]);
+    setTime([timeDelta(start, end), timeDelta(getClustersS, getClustersE)]);
+    setShowModal(false); // Don't auto-show modal
+  };
+
+  const _handleRunMultiple = () => {
+    const superclusterJS = new SuperclusterJS(superclusterOptions);
+    superclusterJS.load(data);
+
+    const supercluster = new Supercluster(superclusterOptions);
+    supercluster.load(data);
+
+    const numberOfRunsInt = parseInt(numberOfRuns, 10);
+
+    const randomBboxAndZoom = Array.from({ length: numberOfRunsInt }, () => {
+      return [
+        Math.random() * 360 - 180,
+        Math.random() * 180 - 90,
+        Math.random() * 360 - 180,
+        Math.random() * 180 - 90,
+        Math.floor(Math.random() * 10),
+      ];
+    });
+
+    const jsTimes: number[] = [];
+    const cppTimes: number[] = [];
+
+    for (const bboxAndZoom of randomBboxAndZoom) {
+      const startJS = PerformanceNow();
+      const clusterResJS = superclusterJS.getClusters(
+        bboxAndZoom as BBox,
+        bboxAndZoom[4]!
+      );
+      const endJS = PerformanceNow();
+
+      const startCPP = PerformanceNow();
+      const clusterResCPP = supercluster.getClusters(
+        bboxAndZoom as BBox,
+        bboxAndZoom[4]!
+      );
+      const endCPP = PerformanceNow();
+
+      if (clusterResJS.length !== clusterResCPP.length) {
+        console.warn(
+          'size mismatch',
+          clusterResJS.length,
+          clusterResCPP.length
+        );
+        continue;
+      }
+
+      // only count runs that have a result
+      if (clusterResJS.length !== 0) {
+        jsTimes.push(parseFloat(timeDelta(startJS, endJS)));
+        cppTimes.push(parseFloat(timeDelta(startCPP, endCPP)));
+      }
+    }
+
+    console.log('datasize', data.length);
+    console.log('numberOfRunsInt', numberOfRunsInt);
+    console.log('jsTimes', jsTimes);
+    console.log('cppTimes', cppTimes);
+
+    setJsTimeAverage(
+      `${Math.round((jsTimes.reduce((a, b) => a + b, 0) / numberOfRunsInt) * 1000) / 1000}`
+    );
+    setCppTimeAverage(
+      `${Math.round((cppTimes.reduce((a, b) => a + b, 0) / numberOfRunsInt) * 1000) / 1000}`
+    );
   };
 
   return (
@@ -120,10 +193,7 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={{ ...styles.button, marginRight: 10 }}
-          onPress={_handleRunJS}
-        >
+        <TouchableOpacity style={styles.button} onPress={_handleRunJS}>
           <Text>JS Impementation</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={_handleRunCPP}>
@@ -131,12 +201,84 @@ const GetClusters: FunctionComponent<Props> = ({ data }) => {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.h2}>Initialization time: {time[0]} ms</Text>
-      <Text style={styles.h2}>Get clusters time: {time[1]} ms</Text>
-      <Text style={styles.h2}>Result:</Text>
-      <ScrollView style={styles.scrollView}>
-        <Text>{result}</Text>
-      </ScrollView>
+      <View style={styles.resultsContainer}>
+        <View>
+          <Text>Initialization time: {time[0]} ms</Text>
+          <Text>Get clusters time: {time[1]} ms</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.showResultButton}
+          onPress={() => setShowModal(true)}
+          disabled={!result}
+        >
+          <Text>Show Result</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.h2}>Run multiple times</Text>
+      <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+        <Text style={styles.h3}>Number of runs:</Text>
+        <TextInput
+          style={styles.flexInput}
+          placeholder="100"
+          onChangeText={setNumberOfRuns}
+          keyboardType={'number-pad'}
+          value={`${numberOfRuns}`}
+          multiline={false}
+        />
+      </View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={_handleRunMultiple}>
+          <Text>Run multiple times</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text>JS average time: {jsTimeAverage} ms</Text>
+      <Text>C++ average time: {cppTimeAverage} ms</Text>
+
+      <Modal
+        visible={showModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowModal(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: 'white',
+              padding: 20,
+              borderRadius: 10,
+              width: '95%',
+              height: '75%',
+            }}
+          >
+            <Text style={styles.h3}>Result:</Text>
+            <ScrollView style={{ height: 300 }}>
+              <Text selectable>{result}</Text>
+            </ScrollView>
+            <TouchableOpacity
+              style={{
+                marginTop: 20,
+                alignSelf: 'flex-end',
+                paddingVertical: 6,
+                paddingHorizontal: 15,
+                backgroundColor: '#eda78e',
+                borderRadius: 5,
+              }}
+              onPress={() => setShowModal(false)}
+            >
+              <Text style={{ fontWeight: 'bold' }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -149,6 +291,12 @@ const styles = StyleSheet.create({
     height: 300,
   },
   h2: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  h3: {
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -172,6 +320,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
+    gap: 10,
   },
   button: {
     flex: 1,
@@ -181,6 +330,18 @@ const styles = StyleSheet.create({
     height: 40,
     marginVertical: 10,
     backgroundColor: '#eda78e',
+  },
+  showResultButton: {
+    backgroundColor: '#eda78e',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignSelf: 'center',
+  },
+  resultsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });
 

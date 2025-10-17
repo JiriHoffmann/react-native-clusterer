@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState, FunctionComponent } from 'react';
+import { useState, type FunctionComponent } from 'react';
 import {
   StyleSheet,
   View,
@@ -10,11 +10,12 @@ import {
 import { getRandomData, parsedPlacesData } from './places';
 import { GetTile } from './GetTile';
 import { GetClusters } from './GetClusters';
+import type { Supercluster } from 'react-native-clusterer';
 
 const DEFAULT_SIZE = '1000';
 
 export const Comparison: FunctionComponent<{}> = () => {
-  const [data, setData] = useState<supercluster.PointFeature<any>[]>(
+  const [data, setData] = useState<Supercluster.PointFeature<any>[]>(
     getRandomData(DEFAULT_SIZE)
   );
   const [dataSizeInput, setDataSizeInput] = useState(DEFAULT_SIZE);
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginHorizontal: 10,
-    gap: 10
+    gap: 10,
   },
   h2: {
     fontSize: 16,

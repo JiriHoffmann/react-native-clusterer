@@ -1,22 +1,19 @@
-import { NativeModules, Platform } from 'react-native';
+// import { NativeModules, Platform } from 'react-native';
 import GeoViewport from '@mapbox/geo-viewport';
-import { getMarkersCoordinates, getMarkersRegion, regionToBBox } from './utils';
+import {
+  getMarkersCoordinates,
+  getMarkersRegion,
+  isPointCluster,
+  regionToBBox,
+} from './utils';
 
 import type * as GeoJSON from 'geojson';
 import type { MapDimensions, Region } from './types';
-import type Supercluster from './types';
+import type { Supercluster } from './types';
 
-const module = NativeModules.Clusterer;
+import { NitroModules } from 'react-native-nitro-modules';
+import type { Clusterer } from './Clusterer.nitro';
 
-if (
-  module &&
-  typeof module.install === 'function' &&
-  !(global as any).createSupercluster
-) {
-  module.install();
-}
-
-const createSupercluster = (global as any).createSupercluster;
 const defaultOptions = {
   minZoom: 0, // min zoom to generate clusters on
   maxZoom: 16, // max zoom level to cluster the points on
@@ -24,30 +21,17 @@ const defaultOptions = {
   radius: 40, // cluster radius in pixels
   extent: 512, // tile extent (radius is calculated relative to it)
   log: false, // whether to log timing info
-  // whether to generate numeric ids for input features (in vector tiles)
-  generateId: false,
+  generateId: false, // whether to generate numeric ids for input features (in vector tiles)
 };
 
 export default class SuperclusterClass<
   P extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps,
-  C extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps
+  C extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps,
 > {
-  private cppInstance: any = undefined;
+  private clusterer: any | null = null;
   private options: Required<Supercluster.Options<P, C>>;
 
   constructor(options?: Supercluster.Options<P, C>) {
-    if (!createSupercluster) {
-      throw new Error(
-        `The package 'react-native-clusterer' doesn't seem to be linked. Make sure: \n\n` +
-          Platform.select({
-            ios: "- You have run 'pod install'\n",
-            default: '',
-          }) +
-          '- You rebuilt the app after installing the package\n' +
-          '- You are not using Expo Go, but an Expo development client instead\n'
-      );
-    }
-
     this.options = { ...defaultOptions, ...options };
   }
 
@@ -57,8 +41,14 @@ export default class SuperclusterClass<
    *
    * @param points Array of GeoJSON Features, the geometries being GeoJSON Points.
    */
-  load(points: Array<Supercluster.PointFeature<P>>): SuperclusterClass<P, C> {
-    this.cppInstance = createSupercluster(points, this.options);
+  load(points: Array<Supercluster.PointFeature<P>>): this {
+    if (this.clusterer) {
+      throw new Error(
+        'React-Native-Clusterer: The .load() method can only be called once.'
+      );
+    }
+    this.clusterer = NitroModules.createHybridObject<Clusterer>('Clusterer');
+    this.clusterer.load(points, this.options);
     return this;
   }
 
@@ -72,10 +62,10 @@ export default class SuperclusterClass<
   getClusters(
     bbox: GeoJSON.BBox,
     zoom: number
-  ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
-    if (!this.cppInstance) return [];
+  ): Array<supercluster.ClusterFeature<C> | supercluster.PointFeature<P>> {
+    this.throwIfNotInitialized();
 
-    return this.cppInstance
+    return this.clusterer
       .getClusters(bbox, zoom)
       .map(this.addExpansionRegionToCluster);
   }
@@ -90,13 +80,13 @@ export default class SuperclusterClass<
   getClustersFromRegion(
     region: Region,
     mapDimensions: MapDimensions
-  ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
-    if (!this.cppInstance) return [];
+  ): Array<supercluster.ClusterFeature<C> | supercluster.PointFeature<P>> {
+    this.throwIfNotInitialized();
 
     const bbox = regionToBBox(region);
 
     if (region.longitudeDelta >= 40)
-      return this.cppInstance
+      return this.clusterer
         .getClusters(bbox, this.options.minZoom)
         .map(this.addExpansionRegionToCluster);
 
@@ -108,7 +98,7 @@ export default class SuperclusterClass<
       this.options.extent
     );
 
-    return this.cppInstance
+    return this.clusterer
       .getClusters(bbox, viewport.zoom)
       .map(this.addExpansionRegionToCluster);
   }
@@ -118,10 +108,10 @@ export default class SuperclusterClass<
    * [geojson-vt](https://github.com/mapbox/geojson-vt)-compatible JSON
    * tile object with cluster any point features.
    */
-  getTile(x: number, y: number, zoom: number): Supercluster.Tile<C, P> | null {
-    if (!this.cppInstance) return null;
+  getTile(x: number, y: number, zoom: number): supercluster.Tile<C, P> | null {
+    this.throwIfNotInitialized();
 
-    return { features: this.cppInstance.getTile(x, y, zoom) };
+    return { features: this.clusterer.getTile(x, y, zoom) };
   }
 
   /**
@@ -132,10 +122,10 @@ export default class SuperclusterClass<
    */
   getChildren(
     clusterId: number
-  ): Array<Supercluster.ClusterFeature<C> | Supercluster.PointFeature<P>> {
-    if (!this.cppInstance) return [];
+  ): Array<supercluster.ClusterFeature<C> | supercluster.PointFeature<P>> {
+    this.throwIfNotInitialized();
 
-    return this.cppInstance.getChildren(clusterId);
+    return this.clusterer.getChildren(clusterId);
   }
 
   /**
@@ -149,10 +139,10 @@ export default class SuperclusterClass<
     clusterId: number,
     limit?: number,
     offset?: number
-  ): Array<Supercluster.PointFeature<P>> {
-    if (!this.cppInstance) return [];
+  ): Array<supercluster.PointFeature<P>> {
+    this.throwIfNotInitialized();
 
-    return this.cppInstance.getLeaves(clusterId, limit ?? 10, offset ?? 0);
+    return this.clusterer.getLeaves(clusterId, limit ?? 10, offset ?? 0);
   }
 
   /**
@@ -162,9 +152,9 @@ export default class SuperclusterClass<
    * @param clusterId Cluster ID (`cluster_id` value from feature properties).
    */
   getClusterExpansionZoom(clusterId: number): number {
-    if (!this.cppInstance) return 0;
+    this.throwIfNotInitialized();
 
-    return this.cppInstance.getClusterExpansionZoom(clusterId);
+    return this.clusterer.getClusterExpansionZoom(clusterId);
   }
 
   /**
@@ -174,8 +164,7 @@ export default class SuperclusterClass<
    * @param clusterId Cluster ID (`cluster_id` value from feature properties).
    */
   getClusterExpansionRegion = (clusterId: number): Region => {
-    if (!this.cppInstance)
-      return { latitude: 0, longitude: 0, latitudeDelta: 0, longitudeDelta: 0 };
+    this.throwIfNotInitialized();
 
     const clusterMarkersCoordinates = this.getMarkersInCluster(clusterId).map(
       getMarkersCoordinates
@@ -184,21 +173,17 @@ export default class SuperclusterClass<
     return getMarkersRegion(clusterMarkersCoordinates);
   };
 
-  /**
-   * Destroy the instance.
-   * @deprecated Removed in 1.2.0.
-   * @returns True if cluster exists and was destroyed, else false.
-   */
-  destroy(): boolean {
-    console.warn(
-      'React-Native-Clusterer: destroy function is no longer needed'
-    );
-    return false;
+  private throwIfNotInitialized(): void {
+    if (!this.clusterer) {
+      throw new Error(
+        'React-Native-Clusterer: this Supercluster has not features. Use the load() method to add features.'
+      );
+    }
   }
 
   private getMarkersInCluster = (
     clusterId: number
-  ): Array<Supercluster.PointFeature<GeoJSON.GeoJsonProperties>> => {
+  ): Array<supercluster.PointFeature<GeoJSON.GeoJsonProperties>> => {
     const clusterChildren = this.getChildren(clusterId);
 
     if (clusterChildren.length > 1) {
@@ -208,12 +193,10 @@ export default class SuperclusterClass<
   };
 
   private addExpansionRegionToCluster = (
-    feature: Supercluster.PointFeature<P> | Supercluster.ClusterFeatureBase<C>
+    feature: supercluster.PointFeature<P> | Supercluster.ClusterFeatureBase<C>
   ) => {
-    if (feature.properties?.cluster_id) {
-      (
-        feature as Supercluster.ClusterFeature<C>
-      ).properties.getExpansionRegion = () =>
+    if (isPointCluster(feature)) {
+      feature.properties.getExpansionRegion = () =>
         this.getClusterExpansionRegion(feature.properties!.cluster_id);
     }
     return feature;

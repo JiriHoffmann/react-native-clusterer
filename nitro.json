@@ -1,0 +1,16 @@
+{
+  "cxxNamespace": ["clusterer"],
+  "ios": {
+    "iosModuleName": "Clusterer"
+  },
+  "android": {
+    "androidNamespace": ["clusterer"],
+    "androidCxxLibName": "clusterer"
+  },
+  "autolinking": {
+    "Clusterer": {
+      "cpp": "HybridClusterer"
+    }
+  },
+  "ignorePaths": ["node_modules", "example", "lib"]
+}

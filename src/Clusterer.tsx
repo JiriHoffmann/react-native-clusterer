@@ -1,9 +1,12 @@
-import React, { ReactElement } from 'react';
+import React, { type ReactElement } from 'react';
 import { useClusterer } from './useClusterer';
-import type Supercluster from './types';
+import type { Supercluster } from './types';
 import type { MapDimensions, Region } from './types';
 
-export interface ClustererProps<P extends Supercluster.AnyProps, C extends Supercluster.AnyProps> {
+export interface ClustererProps<
+  P extends Supercluster.AnyProps,
+  C extends Supercluster.AnyProps,
+> {
   data: Array<Supercluster.PointFeature<P>>;
   mapDimensions: MapDimensions;
   region: Region;
@@ -15,7 +18,10 @@ export interface ClustererProps<P extends Supercluster.AnyProps, C extends Super
   options?: Supercluster.Options<P, C>;
 }
 
-export function Clusterer<P extends Supercluster.AnyProps, C extends Supercluster.AnyProps>({
+export function Clusterer<
+  P extends Supercluster.AnyProps,
+  C extends Supercluster.AnyProps,
+>({
   data,
   options,
   region,

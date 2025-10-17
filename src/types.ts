@@ -27,6 +27,7 @@ export interface LatLng {
 }
 
 declare namespace Supercluster {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Options<P, C> {
     /**
      * Minimum zoom level at which clusters are generated.
@@ -142,5 +143,4 @@ declare namespace Supercluster {
   }
 }
 
-export default Supercluster;
-
+export type { Supercluster };
