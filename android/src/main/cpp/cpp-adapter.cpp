@@ -1,6 +1,9 @@
+#include <fbjni/fbjni.h>
 #include <jni.h>
 #include "clustererOnLoad.hpp"
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void*) {
-  return margelo::nitro::clusterer::initialize(vm);
+  return facebook::jni::initialize(vm, []() {
+    margelo::nitro::clusterer::registerAllNatives();
+  });
 }

@@ -15,7 +15,7 @@
     "react": "19.1.0",
     "react-native": "0.81.4",
     "react-native-maps": "^1.26.17",
-    "react-native-nitro-modules": "^0.31.5",
+    "react-native-nitro-modules": "^0.35.2",
     "supercluster": "^8.0.1"
   },
   "devDependencies": {

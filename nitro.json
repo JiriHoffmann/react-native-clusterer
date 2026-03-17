@@ -9,7 +9,10 @@
   },
   "autolinking": {
     "Clusterer": {
-      "cpp": "HybridClusterer"
+      "all": {
+        "language": "c++",
+        "implementationClassName": "HybridClusterer"
+      }
     }
   },
   "ignorePaths": ["node_modules", "example", "lib"]
