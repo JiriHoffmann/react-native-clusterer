@@ -8,8 +8,7 @@ class HybridClusterer final : public HybridClustererSpec {
  public:
   HybridClusterer() : HybridObject(TAG) {}
   ~HybridClusterer() {
-    auto instancePtr = instance.value();
-    delete instancePtr;
+    if(instance.has_value()) delete *instance;
   }
 
  public:
