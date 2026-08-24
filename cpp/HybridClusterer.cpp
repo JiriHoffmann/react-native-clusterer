@@ -178,4 +178,12 @@ jsi::Value HybridClusterer::getClusterExpansionZoom(jsi::Runtime &rt,
   return (int)instance.value()->getClusterExpansionZoom(cluster_id);
 }
 
+void HybridClusterer::dispose() {
+  if(instance.has_value()) {
+    delete *instance;
+    instance.reset();
+  }
+  featuresInput.reset();
+}
+
 }  // namespace margelo::nitro::clusterer

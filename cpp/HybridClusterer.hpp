@@ -8,8 +8,7 @@ class HybridClusterer final : public HybridClustererSpec {
  public:
   HybridClusterer() : HybridObject(TAG) {}
   ~HybridClusterer() {
-    auto instancePtr = instance.value();
-    delete instancePtr;
+    if(instance.has_value()) delete *instance;
   }
 
  public:
@@ -30,6 +29,8 @@ class HybridClusterer final : public HybridClustererSpec {
   jsi::Value getClusterExpansionZoom(
       jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args,
       size_t count);
+
+  void dispose() override;
 
   void loadHybridMethods() override {
     // register base prototype

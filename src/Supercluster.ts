@@ -29,6 +29,7 @@ export default class SuperclusterClass<
   C extends GeoJSON.GeoJsonProperties = Supercluster.AnyProps,
 > {
   private clusterer: any | null = null;
+  private disposed = false;
   private options: Required<Supercluster.Options<P, C>>;
 
   constructor(options?: Supercluster.Options<P, C>) {
@@ -42,6 +43,11 @@ export default class SuperclusterClass<
    * @param points Array of GeoJSON Features, the geometries being GeoJSON Points.
    */
   load(points: Array<Supercluster.PointFeature<P>>): this {
+    if (this.disposed) {
+      throw new Error(
+        'React-Native-Clusterer: this Supercluster has been disposed.'
+      );
+    }
     if (this.clusterer) {
       throw new Error(
         'React-Native-Clusterer: The .load() method can only be called once.'
@@ -173,7 +179,27 @@ export default class SuperclusterClass<
     return getMarkersRegion(clusterMarkersCoordinates);
   };
 
+  /**
+   * Frees the native index and releases the loaded features. Worth calling
+   * when you replace a data set, since the garbage collector cannot see how
+   * much native memory this object holds on to.
+   *
+   * Once disposed the instance can no longer be used. Calling it twice is safe.
+   */
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    const clusterer = this.clusterer;
+    this.clusterer = null;
+    clusterer?.dispose();
+  }
+
   private throwIfNotInitialized(): void {
+    if (this.disposed) {
+      throw new Error(
+        'React-Native-Clusterer: this Supercluster has been disposed.'
+      );
+    }
     if (!this.clusterer) {
       throw new Error(
         'React-Native-Clusterer: this Supercluster has not features. Use the load() method to add features.'
