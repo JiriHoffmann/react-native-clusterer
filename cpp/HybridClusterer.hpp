@@ -30,6 +30,8 @@ class HybridClusterer final : public HybridClustererSpec {
       jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args,
       size_t count);
 
+  void dispose() override;
+
   void loadHybridMethods() override {
     // register base prototype
     HybridClustererSpec::loadHybridMethods();
